@@ -2,8 +2,8 @@
 PORT_DIR = barebones
 
 # CoreMark run configuration
-ITERATIONS     = 1000
-CLOCKS_PER_SEC = 75000000
+ITERATIONS     = 5
+CLOCKS_PER_SEC = 5000
 FLAGS_STR      = ""
 
 # Compiler flags
