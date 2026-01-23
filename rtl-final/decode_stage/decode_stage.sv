@@ -1,0 +1,80 @@
+module decode_stage(
+    input logic clk,
+    input logic rst,
+    input logic id_flush,
+    input logic [31:0] instruction_in,
+    input logic reg_file_wr_en,
+    input logic [4:0] reg_file_wr_addr,
+    input logic [31:0] reg_file_wr_data,
+    
+    output logic [31:0] op1,
+    output logic [31:0] op2,
+    output logic [4:0] rs1,
+    output logic [4:0] rs2,
+    output logic [4:0] rd,
+    output logic [31:0] immediate,
+    output logic [6:0] opcode,
+    output logic alu_src,
+    output logic invalid_inst,
+    output logic m_type_inst,
+    output logic [6:0] func7,
+    output logic [2:0] func3,
+    output logic mem_write,
+    output logic wb_load,
+    output logic wb_reg_file
+);
+    logic [31:0] instruction;
+
+    assign instruction = id_flush ? 32'h00000013 : instruction_in;
+
+    assign opcode = instruction[6:0];
+    assign rd = instruction[11:7];
+    assign rs1 = instruction[19:15];
+    assign rs2 = instruction[24:20];
+    assign func7 = instruction[31:25];
+    assign func3 = instruction[14:12];
+
+    always_comb begin
+        case (opcode)
+            7'b0100011: 
+                immediate = {{20{instruction[31]}},instruction[31:25],instruction[11:7]}; 
+            7'b1101111: 
+                immediate = {{11{instruction[31]}},instruction[31],instruction[19:12],instruction[20],instruction[30:21],1'b0};
+            7'b1100011: 
+                immediate = {{19{instruction[31]}},instruction[31],instruction[7],instruction[30:25],instruction[11:8],1'b0};
+            7'b0110111: 
+                immediate = {instruction[31:12],12'h000};
+            7'b0010111: 
+                immediate = {instruction[31:12],12'h000};
+            default:       
+                immediate = {{20{instruction[31]}},instruction[31:20]};
+        endcase
+    end
+    
+    // Instantiate the controller module
+    decode_controller decode_controller_inst (
+        .opcode(opcode),
+        .func3(func3),
+        .func7(func7),
+        .ex_alu_src(alu_src),
+        .mem_write(mem_write),
+        .wb_load(wb_load),
+        .wb_reg_file(wb_reg_file),
+        .invalid_inst(invalid_inst),
+        .m_type_inst(m_type_inst)
+    );
+
+    // Instantiate the register file module
+    register_file register_file_inst (
+        .clk(clk),
+        .wr_en(reg_file_wr_en),
+        .wr_addr(reg_file_wr_addr),
+        .wr_data(reg_file_wr_data),
+        .rs1_addr(rs1),
+        .rs2_addr(rs2),
+        .op1(op1),
+        .op2(op2)
+    );
+
+
+endmodule
