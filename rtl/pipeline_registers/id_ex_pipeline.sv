@@ -9,11 +9,10 @@ module id_ex_pipeline(
     input logic [31:0] id_op1,
     input logic [31:0] id_op2,
     input logic [31:0] id_immediate,
-    input logic [6:0]  id_opcode,
     input logic id_alu_src,
     input logic [6:0]  id_func7,
     input logic [2:0]  id_func3,
-    input logic id_mem_write,
+    input logic id_s_type_inst,
     input logic id_wb_load,
     input logic id_wb_reg_file,
     input logic [4:0] id_rs1,
@@ -30,11 +29,10 @@ module id_ex_pipeline(
     output logic [31:0] ex_op1,
     output logic [31:0] ex_op2,
     output logic [31:0] ex_immediate,
-    output logic [6:0] ex_opcode,
     output logic ex_alu_src,
     output logic [6:0] ex_func7,
     output logic [2:0] ex_func3,
-    output logic ex_mem_write,
+    output logic ex_s_type_inst,
     output logic ex_wb_load,
     output logic ex_wb_reg_file,
     output logic [4:0] ex_rs1,
@@ -53,11 +51,10 @@ module id_ex_pipeline(
             ex_op1 <= 32'h00000000;
             ex_op2 <= 32'h00000000;
             ex_immediate <= 32'h00000000;
-            ex_opcode <= 7'b0000000;
             ex_alu_src <= 1'b0;
             ex_func7 <= 7'b0000000;
             ex_func3 <= 3'b000;
-            ex_mem_write <= 1'b0;
+            ex_s_type_inst <= 1'b0;
             ex_wb_load <= 1'b0;
             ex_wb_reg_file <= 1'b0;
             ex_wb_rd <= 5'b00000;
@@ -74,11 +71,10 @@ module id_ex_pipeline(
             ex_op1 <= 0;
             ex_op2 <= 0;
             ex_immediate <= 32'h00000000;
-            ex_opcode <= 7'b0010011;
             ex_alu_src <= 1'b1;
             ex_func7 <= 7'b0000000;
             ex_func3 <= 3'b000;
-            ex_mem_write <= 1'b0;
+            ex_s_type_inst <= 1'b0;
             ex_wb_load <= 1'b0;
             ex_wb_reg_file <= 1'b0;
             ex_wb_rd <= 0;
@@ -95,11 +91,10 @@ module id_ex_pipeline(
             ex_op1 <= id_op1;
             ex_op2 <= id_op2;
             ex_immediate <= id_immediate;
-            ex_opcode <= id_opcode;
             ex_alu_src <= id_alu_src;
             ex_func7 <= id_func7;
             ex_func3 <= id_func3;
-            ex_mem_write <= id_mem_write;
+            ex_s_type_inst <= id_s_type_inst;
             ex_wb_load <= id_wb_load;
             ex_wb_reg_file <= id_wb_reg_file;
             ex_wb_rd <= id_wb_rd;

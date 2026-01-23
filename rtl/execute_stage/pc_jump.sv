@@ -4,10 +4,11 @@ module pc_jump(
     input logic [31:0] pc,
     input logic signed [31:0] immediate,
     input logic [31:0] op1,
-    input logic [6:0] opcode,
     input logic [2:0] func3,
     input logic [2:0] alu_flags,
     input logic predictedTaken,
+    input logic [8:0] decoded_instruction,
+
     output logic [31:0] update_pc,
     output logic [31:0] jump_addr,
     output logic modify_pc,
@@ -24,9 +25,10 @@ module pc_jump(
     assign ltu_flag = alu_flags[1];
     assign zero_flag = alu_flags[0];
 
-    assign jalr_inst = opcode ==7'b1100111;
-    assign jump_inst = (opcode ==7'b1101111) || jalr_inst;
-    assign branch_inst = (opcode == 7'b1100011);
+    // decoded_instruction = {r_type_inst, i_type_inst, s_type_inst, wb_load, u_type_inst, b_type_inst, j_type_inst, aupic_inst, jalr_inst};
+    assign jalr_inst = decoded_instruction[0];
+    assign jump_inst = decoded_instruction[2] || jalr_inst;
+    assign branch_inst = decoded_instruction[3];
 
     // Compute branch/jump enable
     wire beq  = (func3 == 3'b000);

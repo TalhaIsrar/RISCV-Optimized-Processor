@@ -6,8 +6,8 @@ module forwarding_unit(
     input logic reg_file_wr_mem,
     input logic reg_file_wr_wb,
 
-    output logic [1:0] operand_a_cntl, // Change name
-    output logic [1:0] operand_b_cntl // Change name
+    output logic [1:0] rs1_forward_cntl, 
+    output logic [1:0] rs2_forward_cntl 
 );
 
     logic valid_rd_mem;
@@ -27,11 +27,11 @@ module forwarding_unit(
     assign valid_rs2_wb = rs2 == rd_wb && valid_rd_wb;
 
     always_comb begin
-        operand_a_cntl = valid_rs1_mem ? `FORWARD_MEM :
+        rs1_forward_cntl = valid_rs1_mem ? `FORWARD_MEM :
                         valid_rs1_wb  ? `FORWARD_WB  :
                                         `FORWARD_ORG;
 
-        operand_b_cntl = valid_rs2_mem ? `FORWARD_MEM :
+        rs2_forward_cntl = valid_rs2_mem ? `FORWARD_MEM :
                         valid_rs2_wb  ? `FORWARD_WB  :
                                         `FORWARD_ORG;
     end

@@ -1,6 +1,6 @@
 module data_memory (
     input logic clk,
-    input logic mem_write,       // 1 = write, 0 = read
+    input logic s_type_inst,       // 1 = write, 0 = read
     input logic [3:0] byte_en,
     input logic [17:0] write_addr,
     input logic [17:0] read_addr,
@@ -31,7 +31,7 @@ module data_memory (
     // Implement synchronous write with byte-enables.
     // This maps directly to BRAM's byte-write enable feature.
     always @(posedge clk) begin
-        if (mem_write) begin
+        if (s_type_inst) begin
             if (byte_en[0]) mem[word_write_addr][7:0]   <= write_data[7:0];
             if (byte_en[1]) mem[word_write_addr][15:8]  <= write_data[15:8];
             if (byte_en[2]) mem[word_write_addr][23:16] <= write_data[23:16];

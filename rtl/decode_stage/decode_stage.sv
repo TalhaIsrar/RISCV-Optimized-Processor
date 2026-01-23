@@ -13,29 +13,28 @@ module decode_stage(
     output logic [4:0] rs2,
     output logic [4:0] rd,
     output logic [31:0] immediate,
-    output logic [6:0] opcode,
     output logic alu_src,
     output logic invalid_inst,
     output logic m_type_inst,
     output logic [6:0] func7,
     output logic [2:0] func3,
-    output logic mem_write,
+    output logic s_type_inst,
     output logic wb_load,
     output logic wb_reg_file,
     output [8:0] decoded_instruction
 );
     wire [31:0] instruction;
 
-    assign instruction = id_flush ? 32'h00000013 : instruction_in;
+    assign instruction = instruction_in;
 
-    assign opcode = instruction[6:0];
+    wire [6:0] opcode = instruction[6:0];
     assign rd = instruction[11:7];
     assign rs1 = instruction[19:15];
     assign rs2 = instruction[24:20];
     assign func7 = instruction[31:25];
     assign func3 = instruction[14:12];
 
-    // decoded_instruction = {r_type_inst, i_type_inst, mem_write, wb_load, u_type_inst, b_type_inst, j_type_inst, aupic_inst, jalr_inst};
+    // decoded_instruction = {r_type_inst, i_type_inst, s_type_inst, wb_load, u_type_inst, b_type_inst, j_type_inst, aupic_inst, jalr_inst};
 
     wire [31:0] imm_s = decoded_instruction[6] ? {{20{instruction[31]}}, instruction[31:25], instruction[11:7]} : '0;
     wire [31:0] imm_j = decoded_instruction[2] ?  {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0} : '0;
@@ -51,7 +50,7 @@ module decode_stage(
         .func3(func3),
         .func7(func7),
         .ex_alu_src(alu_src),
-        .mem_write(mem_write),
+        .s_type_inst(s_type_inst),
         .wb_load(wb_load),
         .wb_reg_file(wb_reg_file),
         .invalid_inst(invalid_inst),

@@ -57,11 +57,10 @@ module riscv_soc_top(
     logic [4:0]  id_rs2, ex_rs2;
     logic [4:0]  id_wb_rd, ex_wb_rd;
     logic [31:0] id_immediate, ex_immediate;
-    logic [6:0]  id_opcode, ex_opcode;
     logic        id_alu_src, ex_alu_src;
     logic [6:0]  id_func7, ex_func7;
     logic [2:0]  id_func3, ex_func3;
-    logic        id_mem_write, ex_mem_write;
+    logic        id_s_type_inst, ex_s_type_inst;
     logic [2:0]  id_mem_load_type, ex_mem_load_type;
     logic [1:0]  id_mem_store_type, ex_mem_store_type;
     logic        id_wb_load, ex_wb_load;
@@ -71,8 +70,8 @@ module riscv_soc_top(
     logic [8:0]  id_decoded_instruction, ex_decoded_instruction;
 
     // Forwarding Unit Connection
-    logic [1:0]  operand_a_cntl;
-    logic [1:0]  operand_b_cntl;
+    logic [1:0]  rs1_forward_cntl;
+    logic [1:0]  rs2_forward_cntl;
 
     // EX/MEM Conncetion
     logic [4:0]  alu_rd;
@@ -159,13 +158,12 @@ module riscv_soc_top(
         .rs2(id_rs2),
         .rd(id_wb_rd),
         .immediate(id_immediate),
-        .opcode(id_opcode),
         .alu_src(id_alu_src),
         .invalid_inst(invalid_inst),
         .m_type_inst(m_type_inst),
         .func7(id_func7),
         .func3(id_func3),
-        .mem_write(id_mem_write),
+        .s_type_inst(id_s_type_inst),
         .wb_load(id_wb_load),
         .wb_reg_file(id_wb_reg_file),
         .decoded_instruction(id_decoded_instruction)
@@ -182,11 +180,10 @@ module riscv_soc_top(
         .id_op1(id_op1),
         .id_op2(id_op2),
         .id_immediate(id_immediate),
-        .id_opcode(id_opcode),
         .id_alu_src(id_alu_src),
         .id_func7(id_func7),
         .id_func3(id_func3),
-        .id_mem_write(id_mem_write),
+        .id_s_type_inst(id_s_type_inst),
         .id_wb_load(id_wb_load),
         .id_wb_reg_file(id_wb_reg_file),
         .id_rs1(id_rs1),
@@ -203,11 +200,10 @@ module riscv_soc_top(
         .ex_op1(ex_op1),
         .ex_op2(ex_op2),
         .ex_immediate(ex_immediate),
-        .ex_opcode(ex_opcode),
         .ex_alu_src(ex_alu_src),
         .ex_func7(ex_func7),
         .ex_func3(ex_func3),
-        .ex_mem_write(ex_mem_write),
+        .ex_s_type_inst(ex_s_type_inst),
         .ex_wb_load(ex_wb_load),
         .ex_wb_reg_file(ex_wb_reg_file),
         .ex_rs1(ex_rs1),
@@ -227,8 +223,8 @@ module riscv_soc_top(
         .rd_wb(wb_rd),
         .reg_file_wr_mem(mem_wb_reg_file),
         .reg_file_wr_wb(wb_reg_file),
-        .operand_a_cntl(operand_a_cntl),
-        .operand_b_cntl(operand_b_cntl)
+        .rs1_forward_cntl(rs1_forward_cntl),
+        .rs2_forward_cntl(rs2_forward_cntl)
     );
 
     // Instantiate the Execute stage module
@@ -242,15 +238,16 @@ module riscv_soc_top(
         .immediate(ex_immediate),
         .func7(ex_func7),
         .func3(ex_func3),
-        .opcode(ex_opcode),
         .ex_alu_src(ex_alu_src),
         .predictedTaken(ex_pred_taken),
         .ex_wb_reg_file(ex_wb_reg_file),
         .alu_rd(ex_wb_rd),
-        .operand_a_forward_cntl(operand_a_cntl),
-        .operand_b_forward_cntl(operand_b_cntl),
+        .rs1_forward_cntl(rs1_forward_cntl),
+        .rs2_forward_cntl(rs2_forward_cntl),
         .data_forward_mem(mem_result),
         .data_forward_wb(wb_result),
+        .decoded_instruction(ex_decoded_instruction),
+
         .result(ex_result),
         .op1_selected(m_unit_op1),
         .op2_selected(ex_op2_selected),
@@ -289,7 +286,7 @@ module riscv_soc_top(
         .pipeline_en(1),
         .ex_result(ex_result),
         .ex_op2_selected(ex_op2_selected),
-        .ex_memory_write(ex_mem_write),
+        .ex_memory_write(ex_s_type_inst),
         .ex_memory_load_type(ex_func3),
         .ex_wb_load(ex_wb_load),
         .ex_wb_reg_file(alu_wb),
@@ -310,7 +307,7 @@ module riscv_soc_top(
         .rst(rst),
         .result(mem_result),
         .op2_data(mem_op2_selected),
-        .mem_write(mem_memory_write),
+        .s_type_inst(mem_memory_write),
         .load_type(mem_memory_load_type),
         .read_data(mem_read_data),
         .calculated_result(mem_calculated_result)

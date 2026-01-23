@@ -7,17 +7,17 @@ module execute_stage(
     input logic [31:0] immediate,
     input logic [6:0] func7,
     input logic [2:0] func3,
-    input logic [6:0] opcode,
     input logic ex_alu_src,
     input logic predictedTaken,
     input logic ex_wb_reg_file,
     input logic [4:0] alu_rd,
     input logic pred_valid,
     
-    input logic [1:0] operand_a_forward_cntl,
-    input logic [1:0] operand_b_forward_cntl,
+    input logic [1:0] rs1_forward_cntl,
+    input logic [1:0] rs2_forward_cntl,
     input logic [31:0] data_forward_mem,
     input logic [31:0] data_forward_wb,
+    input logic [8:0] decoded_instruction,
 
     output [31:0] result,
     output logic [31:0] op1_selected,
@@ -33,15 +33,15 @@ module execute_stage(
     logic [3:0] ALUControl;
     logic [31:0] op1_forwarded;
     logic [31:0] op2_forwarded;
-    logic [31:0] op1_alu;
-    logic [31:0] op2_alu;
+    wire [31:0] op1_alu;
+    wire [31:0] op2_alu;
     logic [31:0] alu_result;
 
     logic [2:0] alu_flags;   
 
     // Mux for forwarding operand 1
     always_comb begin
-        case (operand_a_forward_cntl)
+        case (rs1_forward_cntl)
             2'b01: op1_forwarded = data_forward_mem;
             2'b10:  op1_forwarded = data_forward_wb;
             default:      op1_forwarded = op1;
@@ -50,7 +50,7 @@ module execute_stage(
 
     // Mux for forwarding operand 2
     always_comb begin
-        case (operand_b_forward_cntl)
+        case (rs2_forward_cntl)
             2'b01: op2_forwarded = data_forward_mem;
             2'b10:  op2_forwarded = data_forward_wb;
             default:      op2_forwarded = op2;
@@ -62,28 +62,14 @@ module execute_stage(
     assign op2_selected = op2_forwarded;
     assign op1_selected = op1_forwarded;
 
-    always_comb begin
-        case (opcode)
-            7'b1100111,
-            7'b1101111: begin
-                op1_alu = pc;
-                op2_alu = 32'd4;
-            end
-            7'b0110111: begin
-                op1_alu = 32'h00000000;
-                op2_alu = immediate;
-            end
-            7'b0010111: begin
-                op1_alu = pc;
-                op2_alu = immediate;
-            end
-            default: begin
-                op1_alu = op1_forwarded;
-                op2_alu = ex_alu_src ? immediate : op2_forwarded;
-            end      
-        endcase
-    end
-    
+    //decoded_instruction = {r_type_inst, i_type_inst, s_type_inst, wb_load, 
+    //            u_type_inst, b_type_inst, j_type_inst, aupic_inst, jalr_inst};
+    assign op2_alu = (decoded_instruction[0] || decoded_instruction[2]) ? 32'd4 :
+                     (ex_alu_src ? immediate : op2_forwarded);
+
+    assign op1_alu = (decoded_instruction[0] || decoded_instruction[1] || decoded_instruction[2]) ? pc :
+                     (decoded_instruction[4] ? '0 : op1_forwarded);
+
     // Instantiate the PC Jump Module
     pc_jump pc_jump_inst (
         .pred_valid(pred_valid),
@@ -91,10 +77,11 @@ module execute_stage(
         .pc(pc),
         .immediate(immediate),
         .op1(op1_forwarded),
-        .opcode(opcode),
         .func3(func3),
         .alu_flags(alu_flags),
         .predictedTaken(predictedTaken),
+        .decoded_instruction(decoded_instruction),
+
         .update_pc(pc_jump_addr),
         .jump_addr(calc_jump_addr),
         .modify_pc(jump_en),
@@ -105,7 +92,7 @@ module execute_stage(
     alu_control alu_control_inst (
         .func3(func3),
         .func7(func7),
-        .opcode(opcode),
+        .decoded_instruction(decoded_instruction),
         .ALUControl(ALUControl)
     );   
 

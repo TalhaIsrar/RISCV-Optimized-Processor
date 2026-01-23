@@ -3,7 +3,7 @@ module mem_stage(
     input logic rst,
     input logic [31:0] result,
     input logic [31:0] op2_data,
-    input logic mem_write,
+    input logic s_type_inst,
     input logic [2:0] load_type,
     output logic [31:0] read_data,
     output logic [31:0] calculated_result
@@ -44,9 +44,9 @@ module mem_stage(
     // Next PC Register
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            result_delay <= 32'h00000000; // Reset PC to 0
-            load_delay <= 3'b000;
-            byte_offset_delay <= 0;
+            result_delay <= '0; // Reset PC to 0
+            load_delay <= '0;
+            byte_offset_delay <= '0;
         end else begin
             result_delay <= result;
             load_delay <= load_type;
@@ -60,8 +60,8 @@ module mem_stage(
     wire [7:0] uartData;
 
     assign uartData = op2_data[7:0];
-    assign uartWen = mem_write & (result == 32'hFFFF_0000);
-    assign dmemWenFinal = mem_write && (!uartWen);
+    assign uartWen = s_type_inst & (result == 32'hFFFF_0000);
+    assign dmemWenFinal = s_type_inst && (!uartWen);
     wire read_timer = (result_delay == 32'hFFFF_FF00);
     assign read_data = read_timer ? timer_val : final_read_data;
 
@@ -70,7 +70,7 @@ module mem_stage(
 
     data_memory dmem(
             .clk(clk),
-            .mem_write(dmemWenFinal),
+            .s_type_inst(dmemWenFinal),
             .byte_en(write_byte_strobe),
             .write_addr(addr[17:0]),
             .read_addr(addr[17:0]),
