@@ -1,0 +1,9 @@
+__pycache__
+code.*
+data.*
+results.xml
+sim_build
+*dump*
+*.o
+*bin
+*elf

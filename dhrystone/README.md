@@ -1,0 +1,1 @@
+The original [Dhrystone repo](https://github.com/sifive/benchmark-dhrystone) was used with a few modifications. Some help to setup and get it working was taken from from [Dummy32 core](https://github.com/satishashank/dummy32).
