@@ -10,13 +10,9 @@ module riscv_tb;
   logic [31:0] ex_result;
 
     // Instantiate the core
-    riscv_soc_top uut (
+    riscv_processor_top uut (
         .clk(clk),
-        .rst(rst),
-        .wb_result(wb_result),
-        .ex_result(ex_result),
-        .pc_en(pc_en),
-        .led(led)
+        .rst(rst)
     );
 
   initial
