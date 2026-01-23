@@ -9,7 +9,7 @@ module mem_stage(
     output logic [31:0] calculated_result
 );
     // Byte offset from address
-    logic [1:0] byte_offset;
+    wire [1:0] byte_offset;
     assign byte_offset = result[1:0];
 
     // Generate byte strobe for axi4lite write channel
@@ -54,18 +54,18 @@ module mem_stage(
         end
     end
 
-    logic [31:0] timer_val, mem_read_data;
+    wire [31:0] timer_val, mem_read_data;
     logic [31:0] final_read_data;
-    logic uartWen, dmemWenFinal;
-    logic [7:0] uartData;
+    wire uartWen, dmemWenFinal;
+    wire [7:0] uartData;
 
     assign uartData = op2_data[7:0];
     assign uartWen = mem_write & (result == 32'hFFFF_0000);
     assign dmemWenFinal = mem_write && (!uartWen);
-    logic read_timer = (result_delay == 32'hFFFF_FF00);
+    wire read_timer = (result_delay == 32'hFFFF_FF00);
     assign read_data = read_timer ? timer_val : final_read_data;
 
-    logic [31:0] addr = (result - 32'h10000000);
+    wire [31:0] addr = (result - 32'h10000000);
 
 
     data_memory dmem(

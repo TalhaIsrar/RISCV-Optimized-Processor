@@ -12,7 +12,7 @@ module fetch_stage(
     output logic [31:0] pc
 );
     
-    logic [31:0] next_pc;
+    wire [31:0] next_pc;
 
     // Instantiate the PC module
     pc pc_inst (

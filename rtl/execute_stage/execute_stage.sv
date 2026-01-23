@@ -19,15 +19,15 @@ module execute_stage(
     input logic [31:0] data_forward_mem,
     input logic [31:0] data_forward_wb,
 
-    output logic [31:0] result,
+    output [31:0] result,
     output logic [31:0] op1_selected,
-    output logic [31:0] op2_selected,
-    output logic [31:0] pc_jump_addr,
+    output [31:0] op2_selected,
+    output [31:0] pc_jump_addr,
     output logic jump_en,
     output logic update_btb,
     output logic [31:0] calc_jump_addr,
-    output logic [4:0] wb_rd,
-    output logic wb_reg_file
+    output [4:0] wb_rd,
+    output wb_reg_file
 );
 
     logic [3:0] ALUControl;
@@ -37,8 +37,8 @@ module execute_stage(
     logic [31:0] op2_alu;
     logic [31:0] alu_result;
 
-    logic [31:0] op1_valid;
-    logic [31:0] op2_valid;
+    wire [31:0] op1_valid;
+    wire [31:0] op2_valid;
 
     logic [2:0] alu_flags;   
 

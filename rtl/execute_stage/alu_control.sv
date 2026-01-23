@@ -5,8 +5,8 @@ module alu_control(
     output logic [3:0] ALUControl
 );
     // Pre-decode special cases to shorten logic depth
-    logic is_sub = func7[5] && opcode[5];
-    logic is_sra = func7[5];
+    wire is_sub = func7[5] && opcode[5];
+    wire is_sra = func7[5];
 
     always_comb begin
         case (opcode)

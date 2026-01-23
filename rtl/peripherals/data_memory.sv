@@ -13,13 +13,13 @@ module data_memory (
     // The `ram_style` attribute explicitly tells Vivado to use BRAM.
     logic [31:0] mem [0:65535];
 
-        // Initialize memory using file
+    // Initialize memory using file
     initial begin
         $readmemh("data.mem",mem);
     end
 
-    logic [15:0] word_write_addr = write_addr[17:2];
-    logic [15:0] word_read_addr  = read_addr[17:2];
+    wire [15:0] word_write_addr = write_addr[17:2];
+    wire [15:0] word_read_addr  = read_addr[17:2];
 
 
     // Implement a single, synchronous read operation.
@@ -30,7 +30,7 @@ module data_memory (
 
     // Implement synchronous write with byte-enables.
     // This maps directly to BRAM's byte-write enable feature.
-    always_ff @(posedge clk) begin
+    always @(posedge clk) begin
         if (mem_write) begin
             if (byte_en[0]) mem[word_write_addr][7:0]   <= write_data[7:0];
             if (byte_en[1]) mem[word_write_addr][15:8]  <= write_data[15:8];

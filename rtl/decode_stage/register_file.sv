@@ -13,8 +13,8 @@ module register_file (
 );
     logic [31:0] reg_file [31:0];
 
-    logic [31:0] op1_forwarded;
-    logic [31:0] op2_forwarded;
+    wire [31:0] op1_forwarded;
+    wire [31:0] op2_forwarded;
 
     // Operand forwarding if read and write addr are same
     assign op1_forwarded = ((rs1_addr == wr_addr) && wr_en) ? wr_data : reg_file[rs1_addr];

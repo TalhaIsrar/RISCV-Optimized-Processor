@@ -7,8 +7,8 @@ module pc_update(
     input logic jump_en,
     output logic [31:0] next_pc
 );
-    logic [1:0] selection = {jump_en , btb_pc_valid && btb_pc_predictTaken};
-    logic [31:0] pc_plus_4 = pc + 32'h4;
+    wire [1:0] selection = {jump_en , btb_pc_valid && btb_pc_predictTaken};
+    wire [31:0] pc_plus_4 = pc + 32'h4;
 
     always_comb begin
         case (selection)

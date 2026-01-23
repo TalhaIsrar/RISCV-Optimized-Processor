@@ -9,36 +9,36 @@ module btb_write(
     output logic next_LRU_write
 );
     // EX Stage operations
-    logic current_LRU_write;
+    wire current_LRU_write;
 
     // Extract Signals from Set
-    logic [63:0] branch1, branch2;
-    logic valid1, valid2;
-    logic [26:0] tag1, tag2;
-    logic [31:0] target1, target2;
-    logic [1:0] state1, state2;
+    wire [63:0] branch1, branch2;
+    wire valid1, valid2;
+    wire [26:0] tag1, tag2;
+    wire [31:0] target1, target2;
+    wire [1:0] state1, state2;
 
     // Final write singals to put into BTB
-    logic write_valid1, write_valid2;
-    logic [26:0] write_tag1, write_tag2;
-    logic [31:0] write_target1, write_target2;
+    wire write_valid1, write_valid2;
+    wire [26:0] write_tag1, write_tag2;
+    wire [31:0] write_target1, write_target2;
 
     // Check for each branch in set
-    logic check_branch1, check_branch2;
-    logic entry_exists;
+    wire check_branch1, check_branch2;
+    wire entry_exists;
 
     // Insert data branches
-    logic insert_branch1, insert_branch2;
+    wire insert_branch1, insert_branch2;
 
     // Branch to take
-    logic take_branch1, take_branch2;
+    wire take_branch1, take_branch2;
 
     // Current state of branches to consider
-    logic [1:0] current_state_branch1, current_state_branch2;
+    wire [1:0] current_state_branch1, current_state_branch2;
 
     // Next state of branches
-    logic [1:0] next_state_branch1, next_state_branch2;
-    logic [1:0] write_state1, write_state2;
+    wire [1:0] next_state_branch1, next_state_branch2;
+    wire [1:0] write_state1, write_state2;
 
     // Set (128 bits) = Branch1 (64 bits) + Branch2(64 bits)
     // Branch (64 bits) = Valid (1 bit) + Tag (27 bits) + Target (32 bits) + State (2 bits) + N/A (2 bits)

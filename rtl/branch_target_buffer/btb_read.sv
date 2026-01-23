@@ -9,20 +9,20 @@ module btb_read(
     output logic [31:0] target
 );
     // IF Stage Operations
-    logic current_LRU_read;
+    wire current_LRU_read;
 
     // Extract Signals from Set
-    logic [63:0] branch1, branch2;
-    logic valid1, valid2;
-    logic [26:0] tag1, tag2;
-    logic [31:0] target1, target2;
-    logic [1:0] state1, state2;
+    wire [63:0] branch1, branch2;
+    wire valid1, valid2;
+    wire [26:0] tag1, tag2;
+    wire [31:0] target1, target2;
+    wire [1:0] state1, state2;
 
     // Check for each branch in set
-    logic check_branch1, check_branch2;
+    wire check_branch1, check_branch2;
 
     // Current state of read PC in Dynamic 2 bit predictor
-    logic [1:0] current_state;
+    wire [1:0] current_state;
 
     // Set (128 bits) = Branch1 (64 bits) + Branch2(64 bits)
     // Branch (64 bits) = Valid (1 bit) + Tag (27 bits) + Target (32 bits) + State (2 bits) + N/A (2 bits)

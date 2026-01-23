@@ -23,7 +23,7 @@ module decode_stage(
     output logic wb_load,
     output logic wb_reg_file
 );
-    logic [31:0] instruction;
+    wire [31:0] instruction;
 
     assign instruction = id_flush ? 32'h00000013 : instruction_in;
 

@@ -4,11 +4,11 @@ module alu(
     input logic [3:0] ALUControl,
 
     output logic [31:0] result,
-    output logic [2:0] alu_flags
+    output [2:0] alu_flags
 );
-    logic lt_flag;   // signed comparison
-    logic ltu_flag;  // unsigned comparison
-    logic zero_flag;  // result == 0
+    wire lt_flag;   // signed comparison
+    wire ltu_flag;  // unsigned comparison
+    wire zero_flag;  // result == 0
 
     assign lt_flag = $signed(op1) < $signed(op2);
     assign ltu_flag = op1 < op2;

@@ -14,20 +14,20 @@ module btb(
 );
 
     // Read Signals
-    logic [2:0] read_index;
-    logic [26:0] read_tag;
-    logic [127:0] read_set;
+    wire [2:0] read_index;
+    wire [26:0] read_tag;
+    wire [127:0] read_set;
 
     // Update Signals
-    logic [2:0] update_index;
-    logic [26:0] update_tag;
-    logic [127:0] update_set;  
-    logic [127:0] write_set;
+    wire [2:0] update_index;
+    wire [26:0] update_tag;
+    wire [127:0] update_set;  
+    wire [127:0] write_set;
 
     // LRU Signals
-    logic [7:0] LRU, next_LRU;
-    logic next_LRU_read;
-    logic next_LRU_write;
+    wire [7:0] LRU, next_LRU;
+    wire next_LRU_read;
+    wire next_LRU_write;
 
     // Added a cycle delay in update signal
     logic reg_file_write;
@@ -54,7 +54,7 @@ module btb(
     assign update_index = update_pc[4:2];
     assign update_tag = update_pc[31:5];
 
-    lru_logic lru_reg_inst(
+    lru_reg lru_reg_inst(
         .clk(clk),
         .rst(rst),
         .LRU_updated(next_LRU),

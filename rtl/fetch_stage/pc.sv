@@ -3,7 +3,7 @@ module pc(
     input rst,
     input [31:0] next_pc,
     input pc_en,
-    output reg [31:0] pc
+    output logic [31:0] pc
 );
 
     // Next PC Register

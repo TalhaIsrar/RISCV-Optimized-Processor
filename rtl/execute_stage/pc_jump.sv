@@ -13,12 +13,12 @@ module pc_jump(
     output logic modify_pc,
     output logic update_btb
 );
-    logic signed [31:0] input_a; 
-    logic [31:0] adder_out;
-    logic [31:0] pc_inc;
-    logic lt_flag, ltu_flag, zero_flag;
-    logic jalr_inst, jump_inst, branch_inst;
-    logic branch_taken;
+    wire signed [31:0] input_a; 
+    wire [31:0] adder_out;
+    wire [31:0] pc_inc;
+    wire lt_flag, ltu_flag, zero_flag;
+    wire jalr_inst, jump_inst, branch_inst;
+    wire branch_taken;
 
     assign lt_flag = alu_flags[2];
     assign ltu_flag = alu_flags[1];
@@ -29,12 +29,12 @@ module pc_jump(
     assign branch_inst = (opcode == 7'b1100011);
 
     // Compute branch/jump enable
-    logic beq  = (func3 == 3'b000);
-    logic bne  = (func3 == 3'b001);
-    logic blt  = (func3 == 3'b100);
-    logic bge  = (func3 == 3'b101);
-    logic bltu = (func3 == 3'b110);
-    logic bgeu = (func3 == 3'b111);
+    wire beq  = (func3 == 3'b000);
+    wire bne  = (func3 == 3'b001);
+    wire blt  = (func3 == 3'b100);
+    wire bge  = (func3 == 3'b101);
+    wire bltu = (func3 == 3'b110);
+    wire bgeu = (func3 == 3'b111);
 
     assign input_a = jalr_inst ? op1 : pc;
     assign adder_out = $signed(input_a) + $signed(immediate);
@@ -49,8 +49,8 @@ module pc_jump(
                         (bgeu && ~ltu_flag) ;
 
 
-    logic branch_mispredicted = branch_inst && ((branch_taken ^ predictedTaken) || (jump_addr != predicted_pc));
-    logic jump_mispredicted = jump_inst && (!predictedTaken || (jump_addr != predicted_pc));
+    wire branch_mispredicted = branch_inst && ((branch_taken ^ predictedTaken) || (jump_addr != predicted_pc));
+    wire jump_mispredicted = jump_inst && (!predictedTaken || (jump_addr != predicted_pc));
 
     assign update_btb = jump_inst || branch_inst;
     assign modify_pc = !pred_valid ? (jump_inst || (branch_taken && branch_inst)) : (branch_mispredicted || jump_mispredicted);

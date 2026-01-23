@@ -6,8 +6,8 @@ module btb_file (
     input logic [127:0] write_set,
     input logic write_en,
 
-    output logic [127:0] read_set,
-    output logic [127:0] update_set  
+    output [127:0] read_set,
+    output [127:0] update_set  
 );
 
     logic [127:0] file [7:0]; // Change from [7:0] to [0:7]
