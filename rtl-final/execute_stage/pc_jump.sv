@@ -1,0 +1,60 @@
+module pc_jump(
+    input logic pred_valid,
+    input logic [31:0] predicted_pc,
+    input logic [31:0] pc,
+    input logic signed [31:0] immediate,
+    input logic [31:0] op1,
+    input logic [6:0] opcode,
+    input logic [2:0] func3,
+    input logic [2:0] alu_flags,
+    input logic predictedTaken,
+    output logic [31:0] update_pc,
+    output logic [31:0] jump_addr,
+    output logic modify_pc,
+    output logic update_btb
+);
+    logic signed [31:0] input_a; 
+    logic [31:0] adder_out;
+    logic [31:0] pc_inc;
+    logic lt_flag, ltu_flag, zero_flag;
+    logic jalr_inst, jump_inst, branch_inst;
+    logic branch_taken;
+
+    assign lt_flag = alu_flags[2];
+    assign ltu_flag = alu_flags[1];
+    assign zero_flag = alu_flags[0];
+
+    assign jalr_inst = opcode ==7'b1100111;
+    assign jump_inst = (opcode ==7'b1101111) || jalr_inst;
+    assign branch_inst = (opcode == 7'b1100011);
+
+    // Compute branch/jump enable
+    logic beq  = (func3 == 3'b000);
+    logic bne  = (func3 == 3'b001);
+    logic blt  = (func3 == 3'b100);
+    logic bge  = (func3 == 3'b101);
+    logic bltu = (func3 == 3'b110);
+    logic bgeu = (func3 == 3'b111);
+
+    assign input_a = jalr_inst ? op1 : pc;
+    assign adder_out = $signed(input_a) + $signed(immediate);
+    assign jump_addr = jalr_inst ? (adder_out & 32'hFFFFFFFE) : adder_out;
+    assign pc_inc = pc + 32'h4;
+
+    assign branch_taken = (beq  &&  zero_flag) ||
+                        (bne  && ~zero_flag) ||
+                        (blt  &&  lt_flag)   ||
+                        (bge  && ~lt_flag)   ||
+                        (bltu &&  ltu_flag)  ||
+                        (bgeu && ~ltu_flag) ;
+
+
+    logic branch_mispredicted = branch_inst && ((branch_taken ^ predictedTaken) || (jump_addr != predicted_pc));
+    logic jump_mispredicted = jump_inst && (!predictedTaken || (jump_addr != predicted_pc));
+
+    assign update_btb = jump_inst || branch_inst;
+    assign modify_pc = !pred_valid ? (jump_inst || (branch_taken && branch_inst)) : (branch_mispredicted || jump_mispredicted);
+    assign update_pc = !pred_valid ? jump_addr : (jump_inst ? jump_addr : (branch_taken ? jump_addr : pc_inc));
+
+
+endmodule

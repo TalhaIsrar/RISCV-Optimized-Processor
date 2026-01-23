@@ -1,0 +1,111 @@
+module id_ex_pipeline(
+    input logic clk,
+    input logic rst,
+    input logic pipeline_flush,
+    input logic pipeline_en,
+
+    input logic [31:0] id_instruction,
+    input logic [31:0] id_pc,
+    input logic [31:0] id_op1,
+    input logic [31:0] id_op2,
+    input logic [31:0] id_immediate,
+    input logic [6:0]  id_opcode,
+    input logic id_alu_src,
+    input logic [6:0]  id_func7,
+    input logic [2:0]  id_func3,
+    input logic id_mem_write,
+    input logic id_wb_load,
+    input logic id_wb_reg_file,
+    input logic [4:0] id_rs1,
+    input logic [4:0] id_rs2,
+    input logic [4:0] id_wb_rd,
+    input logic id_pred_taken,
+    input logic [31:0] id_predicted_pc,
+    input logic id_pred_valid,
+
+    output logic ex_forward_pipeline_flush,
+    output logic [31:0] ex_instruction,
+    output logic [31:0] ex_pc,
+    output logic [31:0] ex_op1,
+    output logic [31:0] ex_op2,
+    output logic [31:0] ex_immediate,
+    output logic [6:0] ex_opcode,
+    output logic ex_alu_src,
+    output logic [6:0] ex_func7,
+    output logic [2:0] ex_func3,
+    output logic ex_mem_write,
+    output logic ex_wb_load,
+    output logic ex_wb_reg_file,
+    output logic [4:0] ex_rs1,
+    output logic [4:0] ex_rs2,
+    output logic [4:0] ex_wb_rd,
+    output logic ex_pred_taken,
+    output logic [31:0] ex_predicted_pc,
+    output logic ex_pred_valid
+);
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            ex_instruction <= 32'h00000000;
+            ex_pc <= 32'h00000000;
+            ex_op1 <= 32'h00000000;
+            ex_op2 <= 32'h00000000;
+            ex_immediate <= 32'h00000000;
+            ex_opcode <= 7'b0000000;
+            ex_alu_src <= 1'b0;
+            ex_func7 <= 7'b0000000;
+            ex_func3 <= 3'b000;
+            ex_mem_write <= 1'b0;
+            ex_wb_load <= 1'b0;
+            ex_wb_reg_file <= 1'b0;
+            ex_wb_rd <= 5'b00000;
+            ex_rs1 <= 5'b00000;
+            ex_rs2 <= 5'b00000;
+            ex_pred_taken <= 1'b0;
+            ex_predicted_pc <= 0;
+            ex_forward_pipeline_flush <= 1'b0;
+            ex_pred_valid <= 0;
+        end else if (pipeline_flush) begin
+            ex_instruction <= 0;
+            ex_pc <= 0;
+            ex_op1 <= 0;
+            ex_op2 <= 0;
+            ex_immediate <= 32'h00000000;
+            ex_opcode <= 7'b0010011;
+            ex_alu_src <= 1'b1;
+            ex_func7 <= 7'b0000000;
+            ex_func3 <= 3'b000;
+            ex_mem_write <= 1'b0;
+            ex_wb_load <= 1'b0;
+            ex_wb_reg_file <= 1'b0;
+            ex_wb_rd <= 0;
+            ex_rs1 <= 0;
+            ex_rs2 <= 0;
+            ex_pred_taken <= 1'b0;
+            ex_predicted_pc <= 0;
+            ex_forward_pipeline_flush <= pipeline_flush;
+            ex_pred_valid <= 0;
+        end else if (pipeline_en) begin
+            ex_instruction <= id_instruction;
+            ex_pc <= id_pc;
+            ex_op1 <= id_op1;
+            ex_op2 <= id_op2;
+            ex_immediate <= id_immediate;
+            ex_opcode <= id_opcode;
+            ex_alu_src <= id_alu_src;
+            ex_func7 <= id_func7;
+            ex_func3 <= id_func3;
+            ex_mem_write <= id_mem_write;
+            ex_wb_load <= id_wb_load;
+            ex_wb_reg_file <= id_wb_reg_file;
+            ex_wb_rd <= id_wb_rd;
+            ex_rs1 <= id_rs1;
+            ex_rs2 <= id_rs2;
+            ex_pred_taken <= id_pred_taken;
+            ex_forward_pipeline_flush <= 1'b0;
+            ex_predicted_pc <= id_predicted_pc;
+            ex_pred_valid <= id_pred_valid;
+        end
+    end
+
+endmodule
