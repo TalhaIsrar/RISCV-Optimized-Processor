@@ -44,45 +44,25 @@ module id_ex_pipeline(
     output logic [8:0] ex_decoded_instruction
 );
 
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            ex_instruction <= 32'h00000000;
-            ex_pc <= 32'h00000000;
-            ex_op1 <= 32'h00000000;
-            ex_op2 <= 32'h00000000;
-            ex_immediate <= 32'h00000000;
-            ex_alu_src <= 1'b0;
-            ex_func7 <= 7'b0000000;
-            ex_func3 <= 3'b000;
-            ex_s_type_inst <= 1'b0;
-            ex_wb_load <= 1'b0;
-            ex_wb_reg_file <= 1'b0;
-            ex_wb_rd <= 5'b00000;
-            ex_rs1 <= 5'b00000;
-            ex_rs2 <= 5'b00000;
-            ex_pred_taken <= 1'b0;
-            ex_predicted_pc <= 0;
-            ex_forward_pipeline_flush <= 1'b0;
-            ex_pred_valid <= 0;
-            ex_decoded_instruction <= 0;
-        end else if (pipeline_flush) begin
+    always_ff @(posedge clk) begin
+        if (rst || pipeline_flush) begin
             ex_instruction <= 0;
             ex_pc <= 0;
             ex_op1 <= 0;
             ex_op2 <= 0;
-            ex_immediate <= 32'h00000000;
+            ex_immediate <= 0;
             ex_alu_src <= 1'b1;
-            ex_func7 <= 7'b0000000;
-            ex_func3 <= 3'b000;
-            ex_s_type_inst <= 1'b0;
-            ex_wb_load <= 1'b0;
-            ex_wb_reg_file <= 1'b0;
+            ex_func7 <= 0;
+            ex_func3 <= 0;
+            ex_s_type_inst <= 0;
+            ex_wb_load <= 0;
+            ex_wb_reg_file <= 0;
             ex_wb_rd <= 0;
             ex_rs1 <= 0;
             ex_rs2 <= 0;
-            ex_pred_taken <= 1'b0;
+            ex_pred_taken <= 0;
             ex_predicted_pc <= 0;
-            ex_forward_pipeline_flush <= pipeline_flush;
+            ex_forward_pipeline_flush <= 1'b1;;
             ex_pred_valid <= 0;
             ex_decoded_instruction <= 0;
         end else if (pipeline_en) begin

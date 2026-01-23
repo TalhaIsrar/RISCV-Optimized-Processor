@@ -24,8 +24,8 @@ module execute_stage(
     output [31:0] op2_selected,
     output [31:0] pc_jump_addr,
     output logic jump_en,
-    output logic update_btb,
-    output logic [31:0] calc_jump_addr,
+    output logic btb_update,
+    output logic [31:0] btb_update_target,
     output [4:0] wb_rd,
     output wb_reg_file
 );
@@ -83,9 +83,9 @@ module execute_stage(
         .decoded_instruction(decoded_instruction),
 
         .update_pc(pc_jump_addr),
-        .jump_addr(calc_jump_addr),
+        .btb_update_target(btb_update_target),
         .modify_pc(jump_en),
-        .update_btb(update_btb)
+        .btb_update(btb_update)
     );
 
     // Instantiate the ALU Controller

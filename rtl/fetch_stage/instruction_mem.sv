@@ -25,10 +25,8 @@ module instruction_mem(
     end
 
     always_ff @(posedge clk) begin
-        if (rst) begin
+        if (rst || flush) begin
             instruction <= 32'h00000000; // Reset instruction to NOP
-        end else if (flush) begin
-            instruction <= 32'h00000000; // Flush instruction to NOP
         end else if (read_en) begin
             instruction <= mem[pc[17:2]]; // Fetch instruction based on PC
         end

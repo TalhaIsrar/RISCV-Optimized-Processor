@@ -10,9 +10,9 @@ module pc_jump(
     input logic [8:0] decoded_instruction,
 
     output logic [31:0] update_pc,
-    output logic [31:0] jump_addr,
+    output logic [31:0] btb_update_target,
     output logic modify_pc,
-    output logic update_btb
+    output logic btb_update
 );
     wire signed [31:0] input_a; 
     wire [31:0] adder_out;
@@ -40,7 +40,7 @@ module pc_jump(
 
     assign input_a = jalr_inst ? op1 : pc;
     assign adder_out = $signed(input_a) + $signed(immediate);
-    assign jump_addr = jalr_inst ? (adder_out & 32'hFFFFFFFE) : adder_out;
+    assign btb_update_target = jalr_inst ? (adder_out & 32'hFFFFFFFE) : adder_out;
     assign pc_inc = pc + 32'h4;
 
     assign branch_taken = (beq  &&  zero_flag) ||
@@ -51,12 +51,12 @@ module pc_jump(
                         (bgeu && ~ltu_flag) ;
 
 
-    wire branch_mispredicted = branch_inst && ((branch_taken ^ predictedTaken) || (jump_addr != predicted_pc));
-    wire jump_mispredicted = jump_inst && (!predictedTaken || (jump_addr != predicted_pc));
+    wire branch_mispredicted = branch_inst && ((branch_taken ^ predictedTaken) || (btb_update_target != predicted_pc));
+    wire jump_mispredicted = jump_inst && (!predictedTaken || (btb_update_target != predicted_pc));
 
-    assign update_btb = jump_inst || branch_inst;
+    assign btb_update = jump_inst || branch_inst;
     assign modify_pc = !pred_valid ? (jump_inst || (branch_taken && branch_inst)) : (branch_mispredicted || jump_mispredicted);
-    assign update_pc = !pred_valid ? jump_addr : (jump_inst ? jump_addr : (branch_taken ? jump_addr : pc_inc));
+    assign update_pc = !pred_valid ? btb_update_target : (jump_inst ? btb_update_target : (branch_taken ? btb_update_target : pc_inc));
 
 
 endmodule

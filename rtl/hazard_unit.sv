@@ -47,7 +47,6 @@ module hazard_unit(
         // Jump/Branch taken flush - 2 Stall
         if (jump_branch_taken) begin
             if_id_pipeline_flush = 1'b1;
-            if_id_pipeline_en = 1'b1;
             id_ex_pipeline_flush = 1'b1;
             ex_mem_pipeline_en = 1'b0;
 

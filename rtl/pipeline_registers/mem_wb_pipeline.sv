@@ -14,12 +14,12 @@ module mem_wb_pipeline(
     output logic [4:0] wb_rd
 );
 
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
-            wb_load <= 1'b0;
-            wb_reg_file <= 1'b0;
-            wb_calculated_result <= 32'h00000000;
-            wb_rd <= 5'b00000;
+            wb_load <= 0;
+            wb_reg_file <= 0;
+            wb_calculated_result <= 0;
+            wb_rd <= 0;
         end else begin
             wb_load <= mem_wb_load;
             wb_reg_file <= mem_wb_reg_file;

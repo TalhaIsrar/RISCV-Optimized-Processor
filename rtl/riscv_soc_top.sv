@@ -253,8 +253,8 @@ module riscv_soc_top(
         .op2_selected(ex_op2_selected),
         .pc_jump_addr(ex_if_pc_jump_addr),
         .jump_en(ex_if_jump_en),
-        .update_btb(btb_update),
-        .calc_jump_addr(btb_update_target),
+        .btb_update(btb_update),
+        .btb_update_target(btb_update_target),
         .wb_rd(alu_rd),
         .wb_reg_file(alu_wb)
     );
