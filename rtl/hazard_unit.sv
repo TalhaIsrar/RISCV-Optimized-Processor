@@ -1,7 +1,7 @@
 module hazard_unit(
     input logic [4:0] id_rs1,
     input logic [4:0] id_rs2,
-    input logic [6:0] opcode,
+    input logic [8:0] decoded_instruction,
     input logic [4:0] ex_rd,
     input logic ex_load_inst,
     input logic jump_branch_taken,
@@ -24,14 +24,11 @@ module hazard_unit(
     logic rs2_hazard;
     logic load_hazard;
 
+    // decoded_instruction = {r_type_inst, i_type_inst, mem_write, wb_load, u_type_inst, b_type_inst, j_type_inst, aupic_inst, jalr_inst};
     // For load we need to check if rs1 or rs2 is actually used in the instruction
-    assign id_rs2_used  = (opcode == `OPCODE_RTYPE ||
-                         opcode == `OPCODE_STYPE ||
-                         opcode == `OPCODE_BTYPE);
-
-    assign id_rs1_used  = (opcode == `OPCODE_ITYPE ||
-                         opcode == `OPCODE_ILOAD ||
-                         opcode == `OPCODE_IJALR) || id_rs2_used;
+    assign id_rs2_used = decoded_instruction[8] || decoded_instruction[6] || decoded_instruction[3];
+    assign id_rs1_used = id_rs2_used || decoded_instruction[7] || 
+                        decoded_instruction[5] || decoded_instruction[0];
 
     assign rs1_hazard = id_rs1_used && (id_rs1 == ex_rd);
     assign rs2_hazard = id_rs2_used && (id_rs2 == ex_rd);

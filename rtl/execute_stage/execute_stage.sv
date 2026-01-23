@@ -37,9 +37,6 @@ module execute_stage(
     logic [31:0] op2_alu;
     logic [31:0] alu_result;
 
-    wire [31:0] op1_valid;
-    wire [31:0] op2_valid;
-
     logic [2:0] alu_flags;   
 
     // Mux for forwarding operand 1
@@ -67,10 +64,7 @@ module execute_stage(
 
     always_comb begin
         case (opcode)
-            7'b1100111: begin
-                op1_alu = pc;
-                op2_alu = 32'd4;
-            end
+            7'b1100111,
             7'b1101111: begin
                 op1_alu = pc;
                 op2_alu = 32'd4;
@@ -89,10 +83,7 @@ module execute_stage(
             end      
         endcase
     end
-        
-    assign op1_valid = op1_alu;
-    assign op2_valid = op2_alu;
-
+    
     // Instantiate the PC Jump Module
     pc_jump pc_jump_inst (
         .pred_valid(pred_valid),
@@ -120,8 +111,8 @@ module execute_stage(
 
     // Instantiate the ALU module
     alu alu_inst (
-        .op1(op1_valid),
-        .op2(op2_valid),
+        .op1(op1_alu),
+        .op2(op2_alu),
         .ALUControl(ALUControl),
         .result(alu_result),
         .alu_flags(alu_flags)

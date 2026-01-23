@@ -21,7 +21,8 @@ module decode_stage(
     output logic [2:0] func3,
     output logic mem_write,
     output logic wb_load,
-    output logic wb_reg_file
+    output logic wb_reg_file,
+    output [8:0] decoded_instruction
 );
     wire [31:0] instruction;
 
@@ -34,23 +35,16 @@ module decode_stage(
     assign func7 = instruction[31:25];
     assign func3 = instruction[14:12];
 
-    always_comb begin
-        case (opcode)
-            7'b0100011: 
-                immediate = {{20{instruction[31]}},instruction[31:25],instruction[11:7]}; 
-            7'b1101111: 
-                immediate = {{11{instruction[31]}},instruction[31],instruction[19:12],instruction[20],instruction[30:21],1'b0};
-            7'b1100011: 
-                immediate = {{19{instruction[31]}},instruction[31],instruction[7],instruction[30:25],instruction[11:8],1'b0};
-            7'b0110111: 
-                immediate = {instruction[31:12],12'h000};
-            7'b0010111: 
-                immediate = {instruction[31:12],12'h000};
-            default:       
-                immediate = {{20{instruction[31]}},instruction[31:20]};
-        endcase
-    end
-    
+    // decoded_instruction = {r_type_inst, i_type_inst, mem_write, wb_load, u_type_inst, b_type_inst, j_type_inst, aupic_inst, jalr_inst};
+
+    wire [31:0] imm_s = decoded_instruction[6] ? {{20{instruction[31]}}, instruction[31:25], instruction[11:7]} : '0;
+    wire [31:0] imm_j = decoded_instruction[2] ?  {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0} : '0;
+    wire [31:0] imm_b = decoded_instruction[3] ?  {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0} : '0;
+    wire [31:0] imm_u = decoded_instruction[4] || decoded_instruction[1] ?  {instruction[31:12], `ZERO_12BIT} : '0;
+    wire [31:0] imm_i = decoded_instruction[0] || decoded_instruction[5]|| decoded_instruction[7]?  {{20{instruction[31]}}, instruction[31:20]} : '0;
+
+    assign immediate = imm_s | imm_j | imm_b | imm_u | imm_i;
+
     // Instantiate the controller module
     decode_controller decode_controller_inst (
         .opcode(opcode),
@@ -61,7 +55,8 @@ module decode_stage(
         .wb_load(wb_load),
         .wb_reg_file(wb_reg_file),
         .invalid_inst(invalid_inst),
-        .m_type_inst(m_type_inst)
+        .m_type_inst(m_type_inst),
+        .decoded_instruction(decoded_instruction)
     );
 
     // Instantiate the register file module

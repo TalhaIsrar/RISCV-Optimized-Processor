@@ -68,6 +68,7 @@ module riscv_soc_top(
     logic        id_wb_reg_file, ex_wb_reg_file;
     logic        id_pred_taken, ex_pred_taken;
     logic        ex_forward_pipeline_flush;
+    logic [8:0]  id_decoded_instruction, ex_decoded_instruction;
 
     // Forwarding Unit Connection
     logic [1:0]  operand_a_cntl;
@@ -166,7 +167,8 @@ module riscv_soc_top(
         .func3(id_func3),
         .mem_write(id_mem_write),
         .wb_load(id_wb_load),
-        .wb_reg_file(id_wb_reg_file)
+        .wb_reg_file(id_wb_reg_file),
+        .decoded_instruction(id_decoded_instruction)
     );
 
     // Instantiate the ID/EX pipeline module
@@ -193,6 +195,7 @@ module riscv_soc_top(
         .id_pred_taken(id_pred_taken),
         .id_predicted_pc(id_predicted_pc),
         .id_pred_valid(id_pred_valid),
+        .id_decoded_instruction(id_decoded_instruction),
 
         .ex_forward_pipeline_flush(ex_forward_pipeline_flush),
         .ex_instruction(m_unit_instruction),
@@ -212,7 +215,8 @@ module riscv_soc_top(
         .ex_wb_rd(ex_wb_rd),
         .ex_pred_taken(ex_pred_taken),
         .ex_predicted_pc(ex_predicted_pc),
-        .ex_pred_valid(ex_pred_valid)
+        .ex_pred_valid(ex_pred_valid),
+        .ex_decoded_instruction(ex_decoded_instruction)
     );
 
     // Instantiate the Forwading Unit module
@@ -262,7 +266,7 @@ module riscv_soc_top(
     hazard_unit hazard_unit_inst (
         .id_rs1(id_rs1),
         .id_rs2(id_rs2),
-        .opcode(id_opcode),
+        .decoded_instruction(id_decoded_instruction),
         .ex_rd(ex_wb_rd),
         .ex_load_inst(ex_wb_load),
         .jump_branch_taken(ex_if_jump_en),
