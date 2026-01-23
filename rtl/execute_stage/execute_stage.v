@@ -40,9 +40,7 @@ module execute_stage(
     wire [31:0] op1_valid;
     wire [31:0] op2_valid;
 
-    wire lt_flag;
-    wire ltu_flag;
-    wire zero_flag;    
+    wire [2:0] alu_flags;   
 
     // Mux for forwarding operand 1
     always @(*) begin
@@ -104,9 +102,7 @@ module execute_stage(
         .op1(op1_forwarded),
         .opcode(opcode),
         .func3(func3),
-        .lt_flag(lt_flag),
-        .ltu_flag(ltu_flag),
-        .zero_flag(zero_flag),
+        .alu_flags(alu_flags),
         .predictedTaken(predictedTaken),
         .update_pc(pc_jump_addr),
         .jump_addr(calc_jump_addr),
@@ -128,9 +124,7 @@ module execute_stage(
         .op2(op2_valid),
         .ALUControl(ALUControl),
         .result(alu_result),
-        .lt_flag(lt_flag),
-        .ltu_flag(ltu_flag),
-        .zero_flag(zero_flag)
+        .alu_flags(alu_flags)
     );
 
     // Check if we have data from M unit

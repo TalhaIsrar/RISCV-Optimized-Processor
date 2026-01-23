@@ -62,8 +62,6 @@ module riscv_soc_top(
     wire [6:0]  id_func7, ex_func7;
     wire [2:0]  id_func3, ex_func3;
     wire        id_mem_write, ex_mem_write;
-    wire [2:0]  id_mem_load_type, ex_mem_load_type;
-    wire [1:0]  id_mem_store_type, ex_mem_store_type;
     wire        id_wb_load, ex_wb_load;
     wire        id_wb_reg_file, ex_wb_reg_file;
     wire        id_pred_taken, ex_pred_taken;
@@ -82,7 +80,6 @@ module riscv_soc_top(
     wire        mem_memory_write;
     wire        mem_memory_read;
     wire [2:0]  mem_memory_load_type;
-    wire [1:0]  mem_memory_store_type;
     wire        mem_wb_load;
     wire        mem_wb_reg_file;
     wire        valid_addr;
@@ -165,8 +162,6 @@ module riscv_soc_top(
         .func7(id_func7),
         .func3(id_func3),
         .mem_write(id_mem_write),
-        .mem_load_type(id_mem_load_type),
-        .mem_store_type(id_mem_store_type),
         .wb_load(id_wb_load),
         .wb_reg_file(id_wb_reg_file)
     );
@@ -187,8 +182,6 @@ module riscv_soc_top(
         .id_func7(id_func7),
         .id_func3(id_func3),
         .id_mem_write(id_mem_write),
-        .id_mem_load_type(id_mem_load_type),
-        .id_mem_store_type(id_mem_store_type),
         .id_wb_load(id_wb_load),
         .id_wb_reg_file(id_wb_reg_file),
         .id_rs1(id_rs1),
@@ -209,8 +202,6 @@ module riscv_soc_top(
         .ex_func7(ex_func7),
         .ex_func3(ex_func3),
         .ex_mem_write(ex_mem_write),
-        .ex_mem_load_type(ex_mem_load_type),
-        .ex_mem_store_type(ex_mem_store_type),
         .ex_wb_load(ex_wb_load),
         .ex_wb_reg_file(ex_wb_reg_file),
         .ex_rs1(ex_rs1),
@@ -292,8 +283,7 @@ module riscv_soc_top(
         .ex_result(ex_result),
         .ex_op2_selected(ex_op2_selected),
         .ex_memory_write(ex_mem_write),
-        .ex_memory_load_type(ex_mem_load_type),
-        .ex_memory_store_type(ex_mem_store_type),
+        .ex_memory_load_type(ex_func3),
         .ex_wb_load(ex_wb_load),
         .ex_wb_reg_file(alu_wb),
         .ex_wb_rd(alu_rd),
@@ -302,7 +292,6 @@ module riscv_soc_top(
         .mem_op2_selected(mem_op2_selected),
         .mem_memory_write(mem_memory_write),
         .mem_memory_load_type(mem_memory_load_type),
-        .mem_memory_store_type(mem_memory_store_type),
         .mem_wb_load(mem_wb_load),
         .mem_wb_reg_file(mem_wb_reg_file),
         .mem_wb_rd(mem_wb_rd)
@@ -315,7 +304,6 @@ module riscv_soc_top(
         .result(mem_result),
         .op2_data(mem_op2_selected),
         .mem_write(mem_memory_write),
-        .store_type(mem_memory_store_type),
         .load_type(mem_memory_load_type),
         .read_data(mem_read_data),
         .calculated_result(mem_calculated_result)

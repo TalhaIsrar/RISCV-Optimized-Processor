@@ -20,8 +20,6 @@ module decode_stage(
     output wire [6:0] func7,
     output wire [2:0] func3,
     output wire mem_write,
-    output wire [2:0] mem_load_type,
-    output wire[1:0] mem_store_type,
     output wire wb_load,
     output wire wb_reg_file
 );
@@ -60,8 +58,6 @@ module decode_stage(
         .func7(func7),
         .ex_alu_src(alu_src),
         .mem_write(mem_write),
-        .mem_load_type(mem_load_type),
-        .mem_store_type(mem_store_type),
         .wb_load(wb_load),
         .wb_reg_file(wb_reg_file),
         .invalid_inst(invalid_inst),

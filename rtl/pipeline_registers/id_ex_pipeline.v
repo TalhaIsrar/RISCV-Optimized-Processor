@@ -14,8 +14,6 @@ module id_ex_pipeline(
     input [6:0]  id_func7,
     input [2:0]  id_func3,
     input id_mem_write,
-    input [2:0] id_mem_load_type,
-    input [1:0] id_mem_store_type,
     input id_wb_load,
     input id_wb_reg_file,
     input [4:0] id_rs1,
@@ -36,8 +34,6 @@ module id_ex_pipeline(
     output reg [6:0] ex_func7,
     output reg [2:0] ex_func3,
     output reg ex_mem_write,
-    output reg [2:0] ex_mem_load_type,
-    output reg [1:0] ex_mem_store_type,
     output reg ex_wb_load,
     output reg ex_wb_reg_file,
     output reg [4:0] ex_rs1,
@@ -60,8 +56,6 @@ module id_ex_pipeline(
             ex_func7 <= 7'b0000000;
             ex_func3 <= 3'b000;
             ex_mem_write <= 1'b0;
-            ex_mem_load_type <= 3'b111;
-            ex_mem_store_type <= 2'b00;
             ex_wb_load <= 1'b0;
             ex_wb_reg_file <= 1'b0;
             ex_wb_rd <= 5'b00000;
@@ -82,8 +76,6 @@ module id_ex_pipeline(
             ex_func7 <= 7'b0000000;
             ex_func3 <= 3'b000;
             ex_mem_write <= 1'b0;
-            ex_mem_load_type <= 3'b111;
-            ex_mem_store_type <= 2'b00;
             ex_wb_load <= 1'b0;
             ex_wb_reg_file <= 1'b0;
             ex_wb_rd <= 0;
@@ -104,8 +96,6 @@ module id_ex_pipeline(
             ex_func7 <= id_func7;
             ex_func3 <= id_func3;
             ex_mem_write <= id_mem_write;
-            ex_mem_load_type <= id_mem_load_type;
-            ex_mem_store_type <= id_mem_store_type;
             ex_wb_load <= id_wb_load;
             ex_wb_reg_file <= id_wb_reg_file;
             ex_wb_rd <= id_wb_rd;

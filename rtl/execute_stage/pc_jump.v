@@ -6,9 +6,7 @@ module pc_jump(
     input [31:0] op1,
     input [6:0] opcode,
     input [2:0] func3,
-    input lt_flag,
-    input ltu_flag,
-    input zero_flag,
+    input [2:0] alu_flags,
     input predictedTaken,
     output [31:0] update_pc,
     output [31:0] jump_addr,
@@ -16,12 +14,15 @@ module pc_jump(
     output update_btb
 );
     wire signed [31:0] input_a; 
-    wire jump_inst, branch_inst;
-    wire jalr_inst;
-    wire branch_taken;
-    wire jump_en;
     wire [31:0] adder_out;
     wire [31:0] pc_inc;
+    wire lt_flag, ltu_flag, zero_flag;
+    wire jalr_inst, jump_inst, branch_inst;
+    wire branch_taken;
+
+    assign lt_flag = alu_flags[2];
+    assign ltu_flag = alu_flags[1];
+    assign zero_flag = alu_flags[0];
 
     assign jalr_inst = opcode ==7'b1100111;
     assign jump_inst = (opcode ==7'b1101111) || jalr_inst;

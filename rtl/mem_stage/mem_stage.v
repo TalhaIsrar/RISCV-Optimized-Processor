@@ -4,7 +4,6 @@ module mem_stage(
     input [31:0] result,
     input [31:0] op2_data,
     input mem_write,
-    input [1:0] store_type,
     input [2:0] load_type,
     output reg [31:0] read_data,
     output wire [31:0] calculated_result

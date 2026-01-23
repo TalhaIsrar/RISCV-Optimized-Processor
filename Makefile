@@ -7,8 +7,8 @@ WAVES = 0 # 1 for waveform debugging
 VERILOG_SOURCES := $(shell find $(PWD)/rtl -type f \( -name "*.v" -o -name "*.sv" -o -name "*.vh" -o -name "*.svh" \))
 VERILOG_INCLUDE := $(shell find $(PWD)/rtl -type d)
 
-# EXTRA_ARGS += --trace --trace-structs --trace-fst --timing -j 8 # Use for debugging to generate wavefile
-EXTRA_ARGS += -j 8 # Use this for faster simulation
+ EXTRA_ARGS += --trace --trace-structs --trace-fst --timing -j 8 # Use for debugging to generate wavefile
+#EXTRA_ARGS += -j 8 # Use this for faster simulation
 
 # Connects cocotb test.py -> TB in verilog
 TOPLEVEL = riscv_tb
