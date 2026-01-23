@@ -56,7 +56,7 @@ module pc_jump(
 
     assign btb_update = jump_inst || branch_inst;
     assign modify_pc = !pred_valid ? (jump_inst || (branch_taken && branch_inst)) : (branch_mispredicted || jump_mispredicted);
-    assign update_pc = !pred_valid ? btb_update_target : (jump_inst ? btb_update_target : (branch_taken ? btb_update_target : pc_inc));
+    assign update_pc = !pred_valid || jump_inst || branch_taken ? btb_update_target : pc_inc;
 
 
 endmodule

@@ -30,7 +30,7 @@ module execute_stage(
     output wb_reg_file
 );
 
-    logic [3:0] ALUControl;
+    logic [9:0] ALUControl;
     logic [31:0] op1_forwarded;
     logic [31:0] op2_forwarded;
     wire [31:0] op1_alu;
