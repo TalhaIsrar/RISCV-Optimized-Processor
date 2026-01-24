@@ -42,7 +42,7 @@ module fetch_stage(
         .read_en(pc_en),
         .write_en(1'b0),
         .flush(flush),
-        .write_addr(16'hffff),
+        .write_addr(14'd0),
         .write_data(32'h00000000),
         .instruction(instruction)
     );

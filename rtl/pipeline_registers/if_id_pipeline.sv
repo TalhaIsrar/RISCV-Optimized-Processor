@@ -19,7 +19,7 @@ module if_id_pipeline(
     output logic id_pred_valid
 );
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk, posedge rst) begin
         if (rst) begin
             id_pc <= 32'h00000000;
             id_pred_taken <= 1'b0;

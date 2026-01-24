@@ -92,6 +92,7 @@ module mem_stage(
     );
 
 
+
     // Perform byte/half-word selection and sign/zero extension *after* the read.
     always_comb begin
         case (load_delay)

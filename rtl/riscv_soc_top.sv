@@ -1,14 +1,16 @@
 module riscv_soc_top(
     input logic clk,
     input logic rst,
-    output logic [31:0] wb_result,
-    output logic [31:0] ex_result,
-    output logic pc_en,
-    output logic led
+    output [31:0] ex_result,
+    output [31:0] wb_result,
+    output pc_en,
+    output led
 );
     // EX/IF Signals
     logic [31:0] ex_if_pc_jump_addr;
     logic ex_jump_en;
+    
+    assign led = if_pc[0];
 
     // Branch Target Buffer Signals
     logic [31:0] btb_target_pc;

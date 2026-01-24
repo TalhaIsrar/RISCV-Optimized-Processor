@@ -11,15 +11,15 @@ module data_memory (
     // Declare memory as word-addressable.
     // 1KB = 1024 bytes = 256 words of 32 bits.
     // The `ram_style` attribute explicitly tells Vivado to use BRAM.
-    logic [31:0] mem [0:65535];
+    logic [31:0] mem [0:8191]; //32k
 
     // Initialize memory using file
     initial begin
         $readmemh("data.mem",mem);
     end
 
-    wire [15:0] word_write_addr = write_addr[17:2];
-    wire [15:0] word_read_addr  = read_addr[17:2];
+    wire [12:0] word_write_addr = write_addr[14:2];
+    wire [12:0] word_read_addr  = read_addr[14:2];
 
 
     // Implement a single, synchronous read operation.
