@@ -5,44 +5,9 @@ module mem_stage(
     input logic [31:0] op2_data,
     input logic s_type_inst,
     input logic [2:0] load_type,
-
-    input logic [31:0] predicted_pc,
-    input logic pred_valid,
-    input logic [31:0] pc,
-    input logic [31:0] immediate,
-    input logic [2:0] func3,
-    input logic [2:0] alu_flags,
-    input logic predictedTaken,
-    input logic [8:0] decoded_instruction,
-    input logic [31:0] op1_forwarded,
-
-    output [31:0] pc_jump_addr,
-    output logic jump_en,
-    output logic btb_update,
-    output logic [31:0] btb_update_target,
-
     output logic [31:0] read_data,
     output logic [31:0] calculated_result
 );
-
-    // Instantiate the PC Jump Module
-    pc_jump pc_jump_inst (
-        .pred_valid(pred_valid),
-        .predicted_pc(predicted_pc),
-        .pc(pc),
-        .immediate(immediate),
-        .op1(op1_forwarded),
-        .func3(func3),
-        .alu_flags(alu_flags),
-        .predictedTaken(predictedTaken),
-        .decoded_instruction(decoded_instruction),
-
-        .update_pc(pc_jump_addr),
-        .btb_update_target(btb_update_target),
-        .modify_pc(jump_en),
-        .btb_update(btb_update)
-    );
-
     // Byte offset from address
     wire [1:0] byte_offset;
     assign byte_offset = result[1:0];

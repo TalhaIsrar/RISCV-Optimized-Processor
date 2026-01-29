@@ -3,8 +3,8 @@ DHRY-CFLAGS += -fno-builtin-printf -fno-common -falign-functions=4 -nostartfiles
 
 GCC-FLAGS = -march=rv32i -mabi=ilp32
 
-DHRY-CFLAGS += -DDHRY_ITERS=500 # Set iterations
-DHRY-CFLAGS += -DCPU_FREQ_HZ=70000000 # SET CLOCK FREQUENCY
+DHRY-CFLAGS += -DDHRY_ITERS=10000 # Set iterations
+DHRY-CFLAGS += -DCPU_FREQ_HZ=75000000 # SET CLOCK FREQUENCY
 
 SRC = start.s dhry_1.c dhry_2.c strcmp.S malloc.c div.c
 HDR = dhry.h

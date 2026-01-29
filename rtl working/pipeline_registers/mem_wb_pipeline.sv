@@ -1,7 +1,6 @@
 module mem_wb_pipeline(
     input logic clk,
     input logic rst,
-    input logic pipeline_en,
     input logic mem_wb_load,
     input logic mem_wb_reg_file,
     input logic [31:0] mem_read_data,

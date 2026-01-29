@@ -15,6 +15,77 @@ void uart_puts(const char *str)
 }
 
 __attribute__((noinline))
+int branch_always_taken(int n)
+{
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (i >= 0)   // always taken
+            sum++;
+    }
+    return sum;
+}
+
+__attribute__((noinline))
+int branch_never_taken(int n)
+{
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (i < 0)    // never taken
+            sum++;
+    }
+    return sum;
+}
+
+
+
+__attribute__((noinline))
+int branch_alternating(int n)
+{
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (i & 1)    // T, NT, T, NT...
+            sum++;
+    }
+    return sum;
+}
+
+__attribute__((noinline))
+int loop_branch(int n)
+{
+    int i = 0;
+    while (i < n)
+    {
+        i++;
+    }
+    return i;
+}
+
+__attribute__((noinline))
+int correlated_branch(int n)
+{
+    int sum = 0;
+    int last = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (last)
+        {
+            sum++;
+            last = 0;
+        }
+        else
+        {
+            last = 1;
+        }
+    }
+    return sum;
+}
+
+
+__attribute__((noinline))
 int fib_debug(int n)
 {
     if (n < 2)

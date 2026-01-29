@@ -20,7 +20,7 @@ module riscv_soc_top(
     logic [31:0] btb_update_target;
 
     logic [31:0] id_predicted_pc, ex_predicted_pc;
-    logic id_pred_valid;
+    logic ex_pred_valid, id_pred_valid;
 
     // Hazard Unit Signals
     logic if_id_pipeline_flush;
@@ -42,7 +42,7 @@ module riscv_soc_top(
     logic id_flush;
 
     // M Unit Connection
-    logic [31:0] op1_selected;
+    logic [31:0] m_unit_op1;
     logic [31:0] m_unit_instruction;
     logic m_unit_invalid_inst;
     logic m_unit_ready;
@@ -88,16 +88,6 @@ module riscv_soc_top(
     logic        mem_wb_load;
     logic        mem_wb_reg_file;
     logic        valid_addr;
-    
-    logic [31:0] mem_predicted_pc;
-    logic ex_pred_valid, mem_pred_valid;
-    logic [31:0] mem_pc;
-    logic [31:0] mem_immediate;
-    logic [2:0] mem_func3;
-    logic [2:0] ex_alu_flags, mem_alu_flags;
-    logic mem_predictedTaken;
-    logic [8:0] mem_decoded_instruction;
-    logic [31:0] mem_op1_selected;
 
     // MEM/WB Connection
     logic [31:0] mem_read_data, wb_read_data;
@@ -126,7 +116,7 @@ module riscv_soc_top(
         .clk(clk),
         .rst(rst),
         .pc(if_pc),
-        .update_pc(mem_pc),
+        .update_pc(ex_pc),
         .update(btb_update), // Replace btb_update by 1'b0 to disconnect BTB
         .update_target(btb_update_target), // Replace btb_update_target by 1'b0 to disconnect BTB
         .mispredicted(ex_if_jump_en),
@@ -241,6 +231,8 @@ module riscv_soc_top(
 
     // Instantiate the Execute stage module
     execute_stage execute_stage_inst (
+        .pred_valid(ex_pred_valid),
+        .predicted_pc(ex_predicted_pc),
         .pc(ex_pc),
         .op1(ex_op1),
         .op2(ex_op2),
@@ -249,6 +241,7 @@ module riscv_soc_top(
         .func7(ex_func7),
         .func3(ex_func3),
         .ex_alu_src(ex_alu_src),
+        .predictedTaken(ex_pred_taken),
         .ex_wb_reg_file(ex_wb_reg_file),
         .alu_rd(ex_wb_rd),
         .rs1_forward_cntl(rs1_forward_cntl),
@@ -258,11 +251,14 @@ module riscv_soc_top(
         .decoded_instruction(ex_decoded_instruction),
 
         .result(ex_result),
-        .op1_selected(op1_selected),
+        .op1_selected(m_unit_op1),
         .op2_selected(ex_op2_selected),
+        .pc_jump_addr(ex_if_pc_jump_addr),
+        .jump_en(ex_if_jump_en),
+        .btb_update(btb_update),
+        .btb_update_target(btb_update_target),
         .wb_rd(alu_rd),
-        .wb_reg_file(alu_wb),
-        .alu_flags(ex_alu_flags)
+        .wb_reg_file(alu_wb)
     );
 
     // Instantiate the Hazard Unit module
@@ -281,17 +277,15 @@ module riscv_soc_top(
         .id_ex_pipeline_en(id_ex_pipeline_en),
         .pc_en(pc_en),
         .load_stall(load_stall),
-        .ex_mem_pipeline_en(ex_mem_pipeline_en),
-        .ex_mem_pipeline_flush(ex_mem_pipeline_flush),
-        .mem_wb_pipeline_en(mem_wb_pipeline_en)
+        .ex_mem_pipeline_en(ex_mem_pipeline_en)
     );
 
     // Instantiate the EX/MEM pipeline module
     ex_mem_pipeline ex_mem_pipeline_inst (
         .clk(clk),
         .rst(rst),
-        .pipeline_flush(ex_mem_pipeline_flush),
-        .pipeline_en(ex_mem_pipeline_en),
+        .pipeline_flush(0),
+        .pipeline_en(1),
         .ex_result(ex_result),
         .ex_op2_selected(ex_op2_selected),
         .ex_memory_write(ex_s_type_inst),
@@ -299,15 +293,6 @@ module riscv_soc_top(
         .ex_wb_load(ex_wb_load),
         .ex_wb_reg_file(alu_wb),
         .ex_wb_rd(alu_rd),
-        .ex_pred_valid(ex_pred_valid),
-        .ex_predicted_pc(ex_predicted_pc),
-        .ex_pc(ex_pc),
-        .ex_immediate(ex_immediate),
-        .ex_func3(ex_func3),
-        .ex_alu_flags(ex_alu_flags),
-        .ex_predictedTaken(ex_pred_taken),
-        .ex_decoded_instruction(ex_decoded_instruction),
-        .ex_op1_selected(op1_selected),
 
         .mem_result(mem_result),
         .mem_op2_selected(mem_op2_selected),
@@ -315,16 +300,7 @@ module riscv_soc_top(
         .mem_memory_load_type(mem_memory_load_type),
         .mem_wb_load(mem_wb_load),
         .mem_wb_reg_file(mem_wb_reg_file),
-        .mem_wb_rd(mem_wb_rd),
-        .mem_pred_valid(mem_pred_valid),
-        .mem_predicted_pc(mem_predicted_pc),
-        .mem_pc(mem_pc),
-        .mem_immediate(mem_immediate),
-        .mem_func3(mem_func3),
-        .mem_alu_flags(mem_alu_flags),
-        .mem_predictedTaken(mem_predictedTaken),
-        .mem_decoded_instruction(mem_decoded_instruction),
-        .mem_op1_selected(mem_op1_selected)
+        .mem_wb_rd(mem_wb_rd)
     );
 
     // Instantiate the Memory stage module
@@ -335,22 +311,6 @@ module riscv_soc_top(
         .op2_data(mem_op2_selected),
         .s_type_inst(mem_memory_write),
         .load_type(mem_memory_load_type),
-
-        .pred_valid(mem_pred_valid),
-        .predicted_pc(mem_predicted_pc),
-        .pc(mem_pc),
-        .immediate(mem_immediate),
-        .func3(mem_func3),
-        .alu_flags(mem_alu_flags),
-        .predictedTaken(mem_predictedTaken),
-        .decoded_instruction(mem_decoded_instruction),
-        .op1_forwarded(mem_op1_selected),
-
-        .pc_jump_addr(ex_if_pc_jump_addr),
-        .jump_en(ex_if_jump_en),
-        .btb_update(btb_update),
-        .btb_update_target(btb_update_target),
-
         .read_data(mem_read_data),
         .calculated_result(mem_calculated_result)
     );
@@ -359,7 +319,6 @@ module riscv_soc_top(
     mem_wb_pipeline mem_wb_pipeline_inst (
         .clk(clk),
         .rst(rst),
-        .pipeline_en(mem_wb_pipeline_en),
         .mem_wb_load(mem_wb_load),
         .mem_wb_reg_file(mem_wb_reg_file),
         .mem_read_data(mem_read_data),
