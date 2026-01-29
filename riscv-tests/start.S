@@ -45,7 +45,7 @@ _start:
 	.global n ## _ret; \
 	n ## _ret:
 	#picorv32_timer_insn(zero, x1); \
-    
+
 	TEST(add)
     TEST(addi)
     TEST(xori)
@@ -85,15 +85,14 @@ _start:
     TEST(simple)
 
     # Uncomment following for m extension
-#	TEST(div)
-#	TEST(divu)
-#	TEST(mul)
-#	TEST(mulh)
-#	TEST(mulhsu)
-#	TEST(mulhu)
-#	TEST(rem)
-#	TEST(remu)
-
+	TEST(div)
+	TEST(divu)
+	TEST(mul)
+	TEST(mulh)
+	TEST(mulhsu)
+	TEST(mulhu)
+    TEST(rem)
+	TEST(remu)
 
 HALT:
     li t0,0xDEADC0DE

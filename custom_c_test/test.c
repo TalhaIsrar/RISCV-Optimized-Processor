@@ -15,77 +15,6 @@ void uart_puts(const char *str)
 }
 
 __attribute__((noinline))
-int branch_always_taken(int n)
-{
-    int sum = 0;
-    for (int i = 0; i < n; i++)
-    {
-        if (i >= 0)   // always taken
-            sum++;
-    }
-    return sum;
-}
-
-__attribute__((noinline))
-int branch_never_taken(int n)
-{
-    int sum = 0;
-    for (int i = 0; i < n; i++)
-    {
-        if (i < 0)    // never taken
-            sum++;
-    }
-    return sum;
-}
-
-
-
-__attribute__((noinline))
-int branch_alternating(int n)
-{
-    int sum = 0;
-    for (int i = 0; i < n; i++)
-    {
-        if (i & 1)    // T, NT, T, NT...
-            sum++;
-    }
-    return sum;
-}
-
-__attribute__((noinline))
-int loop_branch(int n)
-{
-    int i = 0;
-    while (i < n)
-    {
-        i++;
-    }
-    return i;
-}
-
-__attribute__((noinline))
-int correlated_branch(int n)
-{
-    int sum = 0;
-    int last = 0;
-
-    for (int i = 0; i < n; i++)
-    {
-        if (last)
-        {
-            sum++;
-            last = 0;
-        }
-        else
-        {
-            last = 1;
-        }
-    }
-    return sum;
-}
-
-
-__attribute__((noinline))
 int fib_debug(int n)
 {
     if (n < 2)
@@ -96,10 +25,160 @@ int fib_debug(int n)
     return a + b;
 }
 
+__attribute__((noinline))
+int test_mul_basic(void)
+{
+    volatile int a = 7;
+    volatile int b = 6;
+    volatile int c = a * b;
+    return (c == 42) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_mulhsu(void)
+{
+    int a = -5;
+    unsigned b = 4;
+
+    long long prod =
+        (long long)a * (unsigned long long)b;
+
+    int expected = (int)(prod >> 32);
+
+    int hw;
+    asm volatile ("mulhsu %0, %1, %2"
+                  : "=r"(hw)
+                  : "r"(a), "r"(b));
+
+    return (hw == expected) ? 0 : 1;
+}
+
+
+__attribute__((noinline))
+int test_mulh(void)
+{
+    int a = -10;
+    int b = 3;
+
+    long long prod = (long long)a * (long long)b;
+    int expected = (int)(prod >> 32);
+
+    int hw;
+    asm volatile ("mulh %0, %1, %2"
+                  : "=r"(hw)
+                  : "r"(a), "r"(b));
+
+    return (hw == expected) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_mulhu(void)
+{
+    unsigned a = 0xFFFFFFFFu;
+    unsigned b = 2;
+
+    unsigned long long prod =
+        (unsigned long long)a * (unsigned long long)b;
+
+    unsigned expected = (unsigned)(prod >> 32);
+
+    unsigned hw;
+    asm volatile ("mulhu %0, %1, %2"
+                  : "=r"(hw)
+                  : "r"(a), "r"(b));
+
+    return (hw == expected) ? 0 : 1;
+}
+
+
+__attribute__((noinline))
+int test_div(void)
+{
+    volatile int a = -20;
+    volatile int b = 5;
+    volatile int c = a / b;
+    return (c == -4) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_divu(void)
+{
+    volatile unsigned a = 20;
+    volatile unsigned b = 4;
+    volatile unsigned c = a / b;
+    return (c == 5) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_div_zero(void)
+{
+    volatile int a = 123;
+    volatile int b = 0;
+    volatile int c = a / b;
+    return (c == -1) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_div_overflow(void)
+{
+    volatile int a = 0x80000000;
+    volatile int b = -1;
+    volatile int c = a / b;
+    return (c == a) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_rem(void)
+{
+    volatile int a = -20;
+    volatile int b = 6;
+    volatile int c = a % b;
+    return (c == -2) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_rem_zero(void)
+{
+    volatile int a = 123;
+    volatile int b = 0;
+    volatile int c = a % b;
+    return (c == a) ? 0 : 1;
+}
+
+__attribute__((noinline))
+int test_remu(void)
+{
+    volatile unsigned a = 20;
+    volatile unsigned b = 6;
+    volatile unsigned c = a % b;
+    return (c == 2) ? 0 : 1;
+}
+#include <stdint.h>
+void uart_puthex(uint32_t val)
+{
+    uart_puts("0x");
+
+    int shift = 28;
+    for (int i = 0; i < 8; i++)
+    {
+        uint32_t nibble = (val >> shift) & 0xF;
+        uart_putc(nibble < 10 ? ('0' + nibble) : ('A' + nibble - 10));
+        shift -= 4;
+    }
+}
 int main(void)
 {
-    uart_puts("Start\n");
-    int a = fib_debug(4);
-    uart_puts("End\n");
-    return a;
+    int err = 0;
+
+    volatile int a = 0x00000014;
+    volatile int b = 0xfffffffa;
+    volatile int c = a / b;
+
+    uart_puts("ERR=");
+    uart_puthex(c);
+    uart_putc('\n');
+
+
+    // return 0 if ALL tests passed
+    return c;
 }
