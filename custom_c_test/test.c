@@ -166,9 +166,28 @@ void uart_puthex(uint32_t val)
         shift -= 4;
     }
 }
+
+static inline int get_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF10;
+}
+
+static inline int get_jump_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF20;
+}
+
+static inline int get_mispred_count(void)
+{
+    return *(volatile int*)0xFFFFFF30;
+}
+
+
 int main(void)
 {
     int err = 0;
+
+    int start = get_insts_count();
 
     volatile int a = 0x00000014;
     volatile int b = 0xfffffffa;
@@ -178,6 +197,9 @@ int main(void)
     uart_puthex(c);
     uart_putc('\n');
 
+    int end = get_insts_count();
+    int count = end - start;
+    uart_puthex(count);
 
     // return 0 if ALL tests passed
     return c;

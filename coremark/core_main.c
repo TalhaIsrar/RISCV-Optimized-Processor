@@ -104,6 +104,21 @@ char *mem_name[3] = { "Static", "Heap", "Stack" };
 
 */
 
+static inline int get_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF10;
+}
+
+static inline int get_jump_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF20;
+}
+
+static inline int get_mispred_count(void)
+{
+    return *(volatile int*)0xFFFFFF30;
+}
+
 #if MAIN_HAS_NOARGC
 MAIN_RETURN_TYPE
 main(void)
@@ -267,6 +282,9 @@ for (i = 0; i < MULTITHREAD; i++)
 
     /* perform actual benchmark */
     start_time();
+    int mispred_start = get_mispred_count();
+    int j_inst_start = get_jump_insts_count();
+    int inst_start = get_insts_count();
     //ee_printf("Got start time\n");
 
 #if (MULTITHREAD > 1)
@@ -288,6 +306,14 @@ for (i = 0; i < MULTITHREAD; i++)
     iterate(&results[0]);
 #endif
     ee_printf("Getting End time\n");
+    int mispred_end = get_mispred_count();
+    int j_inst_end = get_jump_insts_count();
+    int inst_end = get_insts_count();
+
+    int mispred_count = mispred_end - mispred_start;
+    int j_inst_count = j_inst_end - j_inst_start;
+    int inst_count = inst_end - inst_start;
+
     stop_time();
 
     total_time = get_time();
@@ -388,6 +414,10 @@ for (i = 0; i < MULTITHREAD; i++)
             "ERROR! Must execute for at least 10 secs for a valid result!\n");
         total_errors++;
     }
+
+    ee_printf("Instructions Count : %lu\n", (long unsigned)inst_count);
+    ee_printf("Jump Instructions  : %lu\n", (long unsigned)j_inst_count);
+    ee_printf("Mispredictions     : %lu\n", (long unsigned)mispred_count);
 
     ee_printf("Iterations       : %lu\n",(ee_u32)default_num_contexts * results[0].iterations);
 

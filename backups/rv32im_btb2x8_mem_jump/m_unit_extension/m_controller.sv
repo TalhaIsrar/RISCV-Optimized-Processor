@@ -77,8 +77,6 @@ begin
     end
 end
 
-logic temp;
-
 // COMBINATORIAL BLOCK
 // State machine to handle whole design
 always_comb
@@ -100,7 +98,6 @@ begin
     // setting registers to previous state
     next_state = state;
 
-    temp = 0;
     // State machine control
     unique case (state)
         IDLE: begin
@@ -152,7 +149,6 @@ begin
                     end else if ((next_current_func == DIV || next_current_func == REM) && ((rs1 == 32'h80000000 && rs2 == 32'hFFFFFFFF))) begin
                         next_state = DONE;
                     end else if (abs_rs1 < abs_rs2) begin
-                        temp = 1;
                         mux_R = `MUX_R_A; // get rs1 to return in case of REM
                         next_state = DONE;
                     end else begin

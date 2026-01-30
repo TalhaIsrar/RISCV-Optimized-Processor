@@ -14,7 +14,9 @@ module hazard_unit(
     output logic id_ex_pipeline_en,
     output logic pc_en,
     output logic load_stall,
-    output logic ex_mem_pipeline_en
+    output logic ex_mem_pipeline_en,
+    output logic ex_mem_pipeline_flush,
+    output logic mem_wb_pipeline_en
 );
 
     logic id_rs1_used;
@@ -44,11 +46,14 @@ module hazard_unit(
         pc_en = 1'b1;
         load_stall = 1'b0;
         ex_mem_pipeline_en = 1'b1;
-        // Jump/Branch taken flush - 2 Stall
+        ex_mem_pipeline_flush = 1'b0;
+        mem_wb_pipeline_en = 1'b1;
+
+        // Jump/Branch taken flush - 3 Flush
         if (jump_branch_taken) begin
             if_id_pipeline_flush = 1'b1;
             id_ex_pipeline_flush = 1'b1;
-            ex_mem_pipeline_en = 1'b0;
+            ex_mem_pipeline_flush = 1'b1;
 
         // Load flush - 1 Stall
         end else if (load_hazard) begin

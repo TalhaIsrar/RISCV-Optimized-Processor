@@ -22,6 +22,7 @@ module id_ex_pipeline(
     input logic [31:0] id_predicted_pc,
     input logic id_pred_valid,
     input logic [8:0] id_decoded_instruction,
+    input logic id_m_type_inst,
 
     output logic ex_forward_pipeline_flush,
     output logic [31:0] ex_instruction,
@@ -41,7 +42,8 @@ module id_ex_pipeline(
     output logic ex_pred_taken,
     output logic [31:0] ex_predicted_pc,
     output logic ex_pred_valid,
-    output logic [8:0] ex_decoded_instruction
+    output logic [8:0] ex_decoded_instruction,
+    output logic ex_m_type_inst
 );
 
     always_ff @(posedge clk, posedge rst) begin
@@ -65,6 +67,7 @@ module id_ex_pipeline(
             ex_forward_pipeline_flush <= 1'b1;;
             ex_pred_valid <= 0;
             ex_decoded_instruction <= 0;
+            ex_m_type_inst <= 0;
         end else if (pipeline_flush) begin
             ex_instruction <= 0;
             ex_pc <= 0;
@@ -85,6 +88,7 @@ module id_ex_pipeline(
             ex_forward_pipeline_flush <= 1'b1;;
             ex_pred_valid <= 0;
             ex_decoded_instruction <= 0;
+            ex_m_type_inst <= 0;
         end else if (pipeline_en) begin
             ex_instruction <= id_instruction;
             ex_pc <= id_pc;
@@ -105,6 +109,7 @@ module id_ex_pipeline(
             ex_predicted_pc <= id_predicted_pc;
             ex_pred_valid <= id_pred_valid;
             ex_decoded_instruction <= id_decoded_instruction;
+            ex_m_type_inst <= id_m_type_inst;
         end
     end
 

@@ -2,12 +2,12 @@
 PORT_DIR = barebones
 
 # CoreMark run configuration
-ITERATIONS     = 1
-CLOCKS_PER_SEC = 2000
+ITERATIONS     = 30
+CLOCKS_PER_SEC = 1000
 FLAGS_STR      = ""
 
 # Compiler flags
-CFLAGS = -O2 -Wall -Wextra -march=rv32i -mabi=ilp32 -fno-builtin
+CFLAGS = -O2 -Wall -Wextra -march=rv32im -mabi=ilp32 -fno-builtin
 XCFLAGS = \
 	-g \
 	-DITERATIONS=$(ITERATIONS) \

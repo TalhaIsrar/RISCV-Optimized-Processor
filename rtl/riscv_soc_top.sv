@@ -370,6 +370,8 @@ module riscv_soc_top(
         .predictedTaken(mem_predictedTaken),
         .decoded_instruction(mem_decoded_instruction),
         .op1_forwarded(mem_op1_selected),
+        .stall(load_stall),
+        .pc_enable(pc_en),
 
         .pc_jump_addr(ex_if_pc_jump_addr),
         .jump_en(ex_if_jump_en),

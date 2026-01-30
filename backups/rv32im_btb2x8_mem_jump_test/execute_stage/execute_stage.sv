@@ -1,5 +1,4 @@
 module execute_stage(
-    input logic [31:0] predicted_pc,
     input logic [31:0] pc,
     input logic [31:0] op1,
     input logic [31:0] op2,
@@ -8,10 +7,13 @@ module execute_stage(
     input logic [6:0] func7,
     input logic [2:0] func3,
     input logic ex_alu_src,
-    input logic predictedTaken,
     input logic ex_wb_reg_file,
     input logic [4:0] alu_rd,
-    input logic pred_valid,
+
+    input [31:0] m_unit_result,
+    input m_unit_wr,
+    input m_unit_ready,
+    input [4:0] m_unit_dest,
     
     input logic [1:0] rs1_forward_cntl,
     input logic [1:0] rs2_forward_cntl,
@@ -22,12 +24,9 @@ module execute_stage(
     output [31:0] result,
     output logic [31:0] op1_selected,
     output [31:0] op2_selected,
-    output [31:0] pc_jump_addr,
-    output logic jump_en,
-    output logic btb_update,
-    output logic [31:0] btb_update_target,
     output [4:0] wb_rd,
-    output wb_reg_file
+    output wb_reg_file,
+    output logic [2:0] alu_flags
 );
 
     logic [3:0] ALUControl;
@@ -36,8 +35,6 @@ module execute_stage(
     wire [31:0] op1_alu;
     wire [31:0] op2_alu;
     logic [31:0] alu_result;
-
-    logic [2:0] alu_flags;   
 
     // Mux for forwarding operand 1
     always_comb begin
@@ -70,24 +67,6 @@ module execute_stage(
     assign op1_alu = (decoded_instruction[0] || decoded_instruction[1] || decoded_instruction[2]) ? pc :
                      (decoded_instruction[4] ? '0 : op1_forwarded);
 
-    // Instantiate the PC Jump Module
-    pc_jump pc_jump_inst (
-        .pred_valid(pred_valid),
-        .predicted_pc(predicted_pc),
-        .pc(pc),
-        .immediate(immediate),
-        .op1(op1_forwarded),
-        .func3(func3),
-        .alu_flags(alu_flags),
-        .predictedTaken(predictedTaken),
-        .decoded_instruction(decoded_instruction),
-
-        .update_pc(pc_jump_addr),
-        .btb_update_target(btb_update_target),
-        .modify_pc(jump_en),
-        .btb_update(btb_update)
-    );
-
     // Instantiate the ALU Controller
     alu_control alu_control_inst (
         .func3(func3),
@@ -106,8 +85,8 @@ module execute_stage(
     );
 
     // Check if we have data from M unit
-    assign result = alu_result;
-    assign wb_reg_file = ex_wb_reg_file;
-    assign wb_rd = pipeline_flush ? 0 : alu_rd;
+    assign result = m_unit_ready ? m_unit_result : alu_result;
+    assign wb_reg_file = m_unit_ready ? m_unit_wr : ex_wb_reg_file;
+    assign wb_rd = m_unit_ready ? m_unit_dest : (pipeline_flush ? 5'b00000 : alu_rd);
 
 endmodule
