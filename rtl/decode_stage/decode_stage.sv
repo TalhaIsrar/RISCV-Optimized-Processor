@@ -1,3 +1,5 @@
+`include "defines.svh"
+
 module decode_stage(
     input logic clk,
     input logic rst,

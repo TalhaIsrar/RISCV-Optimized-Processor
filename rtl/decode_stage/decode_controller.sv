@@ -1,3 +1,5 @@
+`include "defines.svh"
+
 module decode_controller (
     input logic [6:0] opcode,
     input logic [2:0] func3,

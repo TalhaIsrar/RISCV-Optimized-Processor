@@ -1,4 +1,4 @@
-module riscv_soc_top(
+module riscv_soc_top #(parameter N = 16)(   // Modify N to change the size of BTB
     input logic clk,
     input logic rst,
     output [31:0] ex_result,
@@ -122,7 +122,7 @@ module riscv_soc_top(
     );
 
     // Instantiate the Branch Target Buffer module
-    btb btb_inst (
+    btb #(.N(N)) btb_inst (
         .clk(clk),
         .rst(rst),
         .pc(if_pc),

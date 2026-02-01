@@ -1,8 +1,8 @@
-module btb_read(
+module btb_read #(parameter N = 32)(
     input logic [127:0] read_set,
-    input logic [31:0] LRU,
-    input logic [24:0] read_tag,
-    input logic [4:0] read_index,
+    input logic [N-1:0] LRU,
+    input logic [29-$clog2(N):0] read_tag,  // 26:0,  25:0,  24:0
+    input logic [$clog2(N)-1:0] read_index, // 3-1:0, 4-1:0, 5-1:0
     output logic next_LRU_read,
     output logic valid,
     output logic predictedTaken,
@@ -14,7 +14,7 @@ module btb_read(
     // Extract Signals from Set
     wire [63:0] branch1, branch2;
     wire valid1, valid2;
-    wire [24:0] tag1, tag2;
+    wire [29-$clog2(N):0] tag1, tag2;
     wire [31:0] target1, target2;
     wire [1:0] state1, state2;
 
@@ -32,11 +32,11 @@ module btb_read(
     assign valid1 = branch1[63];
     assign valid2 = branch2[63];
 
-    assign tag1 = branch1[62:38];
-    assign tag2 = branch2[62:38];
-
-    assign target1 = branch1[37:6];
-    assign target2 = branch2[37:6];
+    assign tag1 = branch1[62:33+$clog2(N)];     
+    assign tag2 = branch2[62:33+$clog2(N)];                 // Tag:    62:36, 62:37, 62:38
+                                                            // Index:  3-1:0, 4-1:0, 5-1:0
+    assign target1 = branch1[32+$clog2(N):1+$clog2(N)];     // Target: 35:4,  36:5,  37:6
+    assign target2 = branch2[32+$clog2(N):1+$clog2(N)];
 
     // Check branches
     assign check_branch1 = valid1 && (read_tag == tag1);
@@ -49,7 +49,7 @@ module btb_read(
     assign target = check_branch1 ? target1 : target2;
 
     // Extract the state of the read PC
-    assign current_state = 2'b10;
+    assign current_state = 2'b10;  // Strong Taken
 
     // predictedTaken is 0 for strongNotTaken(00) && weakNotTaken(01)
     // predictedTaken is 1 for strongTaken(10) && weakTaken(11)

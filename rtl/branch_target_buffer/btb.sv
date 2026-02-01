@@ -1,4 +1,4 @@
-module btb(
+module btb #(parameter N)(
     input logic clk,
     input logic rst,
     input logic [31:0] pc,
@@ -14,25 +14,25 @@ module btb(
 );
 
     // Read Signals
-    wire [4:0] read_index;
-    wire [24:0] read_tag;
+    wire [$clog2(N)-1:0] read_index;
+    wire [29-$clog2(N):0] read_tag;
     wire [127:0] read_set;
 
     // Update Signals
-    wire [4:0] update_index;
-    wire [24:0] update_tag;
+    wire [$clog2(N)-1:0] update_index;
+    wire [29-$clog2(N):0] update_tag;
     wire [127:0] update_set;  
     wire [127:0] write_set;
 
     // LRU Signals
-    wire [31:0] LRU, next_LRU;
+    wire [N-1:0] LRU, next_LRU;
     wire next_LRU_read;
     wire next_LRU_write;
 
     // Added a cycle delay in update signal
     logic reg_file_write;
     logic [127:0] reg_write_set;
-    logic [4:0] reg_write_index;
+    logic [$clog2(N)-1:0] reg_write_index;
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -48,20 +48,20 @@ module btb(
 
 
     // PC (32 bits) = Tag (27 bits) + Index (3 bits) + Byte offset (2 bits)
-    assign read_index = pc[6:2];
-    assign read_tag = pc[31:7];
+    assign read_index = pc[$clog2(N)+1:2]; // 4:2,  5:2,  6:2       // Index: 3-1:0, 4-1:0, 5-1:0  
+    assign read_tag = pc[31:$clog2(N)+2];  // 31:5, 31:6, 31:7
 
-    assign update_index = update_pc[6:2];
-    assign update_tag = update_pc[31:7];
+    assign update_index = update_pc[$clog2(N)+1:2];
+    assign update_tag = update_pc[31:$clog2(N)+2];
 
-    lru_reg lru_reg_inst(
+    lru_reg #(.N(N)) lru_reg_inst(
         .clk(clk),
         .rst(rst),
         .LRU_updated(next_LRU),
         .LRU(LRU)
     );
 
-    btb_file btb_file_inst(
+    btb_file #(.N(N)) btb_file_inst(
         .clk(clk),
         .read_index(read_index),
         .update_index(update_index),
@@ -72,7 +72,7 @@ module btb(
         .update_set(update_set)
     );
 
-    btb_read btb_read_inst(
+    btb_read #(.N(N)) btb_read_inst(
         .read_set(read_set),
         .LRU(LRU),
         .read_tag(read_tag),
@@ -83,7 +83,7 @@ module btb(
         .target(target_pc)
     );
 
-    btb_write btb_write_inst(
+    btb_write #(.N(N)) btb_write_inst(
         .update_set(update_set),
         .LRU(LRU),
         .update_tag(update_tag),
@@ -94,7 +94,7 @@ module btb(
         .next_LRU_write(next_LRU_write)
     );
 
-    lru_next lru_next_inst(
+    lru_next #(.N(N)) lru_next_inst(
         .index(read_index),
         .update_index(update_index),
         .update_lru_read(next_LRU_read),

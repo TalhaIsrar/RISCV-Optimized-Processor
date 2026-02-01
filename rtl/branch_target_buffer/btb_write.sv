@@ -1,8 +1,8 @@
-module btb_write(
+module btb_write #(parameter N = 32)(
     input logic [127:0] update_set,
-    input logic [31:0] LRU,
-    input logic [24:0] update_tag,
-    input logic [4:0] update_index,
+    input logic [N-1:0] LRU,
+    input logic [29-$clog2(N):0] update_tag,
+    input logic [$clog2(N)-1:0] update_index,
     input logic [31:0] update_target,
     input logic mispredicted,
     output logic [127:0] write_set,
@@ -14,13 +14,13 @@ module btb_write(
     // Extract Signals from Set
     wire [63:0] branch1, branch2;
     wire valid1, valid2;
-    wire [24:0] tag1, tag2;
+    wire [29-$clog2(N):0] tag1, tag2;
     wire [31:0] target1, target2;
     wire [1:0] state1, state2;
 
     // Final write singals to put into BTB
     wire write_valid1, write_valid2;
-    wire [24:0] write_tag1, write_tag2;
+    wire [29-$clog2(N):0] write_tag1, write_tag2;
     wire [31:0] write_target1, write_target2;
 
     // Check for each branch in set
@@ -43,11 +43,11 @@ module btb_write(
     assign valid1 = branch1[63];
     assign valid2 = branch2[63];
 
-    assign tag1 = branch1[62:38];
-    assign tag2 = branch2[62:38];
-
-    assign target1 = branch1[37:6];
-    assign target2 = branch2[37:6];
+    assign tag1 = branch1[62:33+$clog2(N)];     
+    assign tag2 = branch2[62:33+$clog2(N)];               // 62:36, 62:37, 62:38
+                                                    //Index: 3-1:0, 4-1:0, 5-1:0
+    assign target1 = branch1[32+$clog2(N):1+$clog2(N)];   // 35:4,  36:5,  37:6
+    assign target2 = branch2[32+$clog2(N):1+$clog2(N)];
 
     // 2 Possible cases:
     // Tag exists and we only need to update
@@ -86,8 +86,8 @@ module btb_write(
 
     // Initialize the final set which we have to replace in BTB file
     // Set is formed from concationation of all results calculated above
-    assign write_set = { write_valid1, write_tag1, write_target1, write_state1, 4'b0000,
-                         write_valid2, write_tag2, write_target2, write_state2, 4'b0000};
+    assign write_set = { write_valid1, write_tag1, write_target1, write_state1, {($clog2(N)-1){1'b0}},
+                         write_valid2, write_tag2, write_target2, write_state2, {($clog2(N)-1){1'b0}}};
 
     // Calculate the next LRU value for current set
     assign next_LRU_write = entry_exists ? current_LRU_write : insert_branch2;

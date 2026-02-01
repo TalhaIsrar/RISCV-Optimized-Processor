@@ -1,8 +1,8 @@
-module btb_file (
+module btb_file #(parameter N = 32)(
     input logic clk,
-    input logic [4:0] read_index, // 2^3 = 8 possible sets
-    input logic [4:0] update_index,
-    input logic [4:0] write_index,
+    input logic [$clog2(N)-1:0] read_index, // 2^3 = 8 possible sets
+    input logic [$clog2(N)-1:0] update_index,
+    input logic [$clog2(N)-1:0] write_index,
     input logic [127:0] write_set,
     input logic write_en,
 
@@ -10,12 +10,12 @@ module btb_file (
     output [127:0] update_set  
 );
 
-    logic [127:0] file [31:0]; // Change from [7:0] to [0:7]
+    logic [127:0] file [N-1:0]; // Change from [7:0] to [0:7]
 
     // Not practical way but here we keep
     integer i;
     initial begin
-        for (i = 0; i < 32; i = i + 1)
+        for (i = 0; i < N; i = i + 1)
             file[i] = 128'h0;
     end
 

@@ -1,9 +1,9 @@
-module lru_reg(
+module lru_reg #(parameter N = 32)(
     input logic clk,
     input logic rst,
-    input logic [31:0] LRU_updated,
+    input logic [N-1:0] LRU_updated,
 
-    output logic [31:0] LRU
+    output logic [N-1:0] LRU
 );
 
     always_ff @(posedge clk or posedge rst) begin
