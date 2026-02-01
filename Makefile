@@ -4,11 +4,12 @@ TOPLEVEL_LANG ?= verilog
 WAVES = 0 # 1 for waveform debugging
 
 # Adding all .v and .sv files
-VERILOG_SOURCES := $(shell find $(PWD)/rtl -type f \( -name "*.v" -o -name "*.sv" -o -name "*.vh" -o -name "*.svh" \))
+VERILOG_SOURCES := $(shell find $(PWD)/rtl -type f \( -name "*.v" -o -name "*.sv" \))
 VERILOG_INCLUDE := $(shell find $(PWD)/rtl -type d)
+INC_DIRS := $(foreach dir,$(VERILOG_INCLUDE),+incdir+$(dir))
 
-# EXTRA_ARGS += --trace --trace-structs --trace-fst --timing -j 8 # Use for debugging to generate wavefile
-EXTRA_ARGS += -j 8 # Use this for faster simulation
+# EXTRA_ARGS += --trace --trace-structs --trace-fst --timing -j 8 $(INC_DIRS) # Use for debugging to generate wavefile
+EXTRA_ARGS += -j 8  $(INC_DIRS)# Use this for faster simulation
 
 # Connects cocotb test.py -> TB in verilog
 TOPLEVEL = riscv_tb

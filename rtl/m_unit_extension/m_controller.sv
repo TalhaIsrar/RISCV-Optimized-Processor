@@ -1,4 +1,4 @@
-//`include "m_definitions.svh"
+`include "m_definitions.svh"
 
 module m_controller(
     // CONTROL INPUTS

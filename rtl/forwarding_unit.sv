@@ -1,3 +1,5 @@
+`include "defines.svh"
+
 module forwarding_unit(
     input logic [4:0] rs1,
     input logic [4:0] rs2,
