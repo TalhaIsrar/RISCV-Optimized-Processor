@@ -49,7 +49,7 @@ module btb_write #(parameter N = 32)(
     // Entry exists = 1 else 0 if doesnt exists
 
     // Valid remain 1 if it was 1 and if new value is being inserted
-    assign write_valid = valid;
+    assign write_valid = 1'b1;
 
     // Mux to select which branch to replace tag of and which to keep as old one
     assign write_tag = update_tag;

@@ -8,9 +8,6 @@ module btb_write #(parameter N = 32)(
     input logic mispredicted,
     output logic [63:0] write_set
 );
-    // EX Stage operations
-    wire current_LRU_write;
-
     // Extract Signals from Set
     wire valid;
     wire [29-$clog2(N):0] tag;
@@ -51,7 +48,7 @@ module btb_write #(parameter N = 32)(
     // Use LRU to decide to write in Branch1 or branch0
 
     // Valid remain 1 if it was 1 and if new value is being inserted
-    assign write_valid = valid;
+    assign write_valid = 1'b1;
 
     // Mux to select which branch to replace tag of and which to keep as old one
     assign write_tag = update_tag;
