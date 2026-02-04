@@ -22,8 +22,8 @@ module btb_read #(parameter M = 128, parameter N = 32)(
 
     assign target = read_set[32+$clog2(N):1+$clog2(N)];
 
-    assign state = read_set[3:2];
-
+    assign state = read_set[$clog2(N):$clog2(N)-1];
+    
     // Check branches
     assign valid = read_valid && (read_tag == tag);
 

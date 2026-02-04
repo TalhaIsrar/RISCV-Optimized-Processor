@@ -54,8 +54,8 @@ module btb_write #(parameter N = 32)(
     assign target1 = branch1[32+$clog2(N):1+$clog2(N)];   // 35:4,  36:5,  37:6
     assign target2 = branch2[32+$clog2(N):1+$clog2(N)];
 
-    assign state1 = branch1[3];
-    assign state2 = branch2[3];
+    assign state1 = branch1[$clog2(N)];
+    assign state2 = branch2[$clog2(N)];
 
     // 2 Possible cases:
     // Tag exists and we only need to update

@@ -20,7 +20,7 @@ module btb_read #(parameter N = 32)(
                                                             // Index:  3-1:0, 4-1:0, 5-1:0
     assign target = read_set[32+$clog2(N):1+$clog2(N)];     // Target: 35:4,  36:5,  37:6
 
-    assign state = read_set[3];
+    assign state = read_set[$clog2(N)];
 
     // Valid Signal checks if any branch has tag
     assign valid = read_valid && (read_tag == tag);

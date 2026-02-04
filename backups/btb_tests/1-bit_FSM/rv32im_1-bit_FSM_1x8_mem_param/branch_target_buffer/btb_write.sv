@@ -36,7 +36,7 @@ module btb_write #(parameter N = 32)(
                                                   //Index: 3-1:0, 4-1:0, 5-1:0
     assign target = update_set[32+$clog2(N):1+$clog2(N)];   // 35:4,  36:5,  37:6
 
-    assign state = update_set[3];
+    assign state = update_set[$clog2(N)];
 
     // 2 Possible cases:
     // Tag exists and we only need to update

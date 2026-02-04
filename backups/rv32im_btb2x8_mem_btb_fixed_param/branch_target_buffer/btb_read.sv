@@ -38,8 +38,8 @@ module btb_read #(parameter N = 32)(
     assign target1 = branch1[32+$clog2(N):1+$clog2(N)];
     assign target2 = branch2[32+$clog2(N):1+$clog2(N)];
 
-    assign state1 = branch1[3:2];
-    assign state2 = branch2[3:2];
+    assign state1 = branch1[$clog2(N):$clog2(N)-1];
+    assign state2 = branch2[$clog2(N):$clog2(N)-1];
 
     // Check branches
     assign check_branch1 = valid1 && (read_tag == tag1);
