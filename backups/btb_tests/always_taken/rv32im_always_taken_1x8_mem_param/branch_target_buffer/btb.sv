@@ -24,11 +24,6 @@ module btb #(parameter M, parameter N)(
     wire [M-1:0] update_set;  
     wire [M-1:0] write_set;
 
-    // LRU Signals
-    wire [N-1:0] LRU, next_LRU;
-    wire next_LRU_read;
-    wire next_LRU_write;
-
     // Added a cycle delay in update signal
     logic reg_file_write;
     logic [M-1:0] reg_write_set;
@@ -48,8 +43,8 @@ module btb #(parameter M, parameter N)(
 
 
     // PC (32 bits) = Tag (27 bits) + Index (3 bits) + Byte offset (2 bits)
-    assign read_index = pc[$clog2(N)+1:2];
-    assign read_tag = pc[31:$clog2(N)+2];
+    assign read_index = pc[$clog2(N)+1:2]; // 4:2,  5:2,  6:2       // Index: 3-1:0, 4-1:0, 5-1:0  
+    assign read_tag = pc[31:$clog2(N)+2];  // 31:5, 31:6, 31:7
 
     assign update_index = update_pc[$clog2(N)+1:2];
     assign update_tag = update_pc[31:$clog2(N)+2];

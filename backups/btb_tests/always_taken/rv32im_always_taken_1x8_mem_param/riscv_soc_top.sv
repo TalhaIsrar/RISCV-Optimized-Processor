@@ -1,4 +1,4 @@
-module riscv_soc_top #(parameter M = 64, parameter N = 8)(
+module riscv_soc_top #(parameter M = 64, parameter N = 8)(   // Modify N to change the size of BTB
     input logic clk,
     input logic rst,
     output [31:0] ex_result,

@@ -6,7 +6,6 @@ module btb_write #(parameter M = 128, parameter N = 32)(
     input logic mispredicted,
     output logic [M-1:0] write_set
 );
-
     // Extract Signals from Set
     wire valid;
     wire [29-$clog2(N):0] tag;
@@ -21,29 +20,19 @@ module btb_write #(parameter M = 128, parameter N = 32)(
     // Check for each branch in set
     wire entry_exists;
 
-    // Current state of branches to consider
-    wire [1:0] current_state_branch;
-
-    // Next state of branches
-    wire [1:0] next_state_branch;
     wire [1:0] write_state;
 
     // Set (128 bits) = Branch1 (64 bits) + Branch2(64 bits)
     // Branch (64 bits) = Valid (1 bit) + Tag (27 bits) + Target (32 bits) + State (2 bits) + N/A (2 bits)
     assign valid = update_set[63];
 
-    assign tag = update_set[62:33+$clog2(N)];
-
-    assign target = update_set[32+$clog2(N):1+$clog2(N)];
-
-    assign state = update_set[3:2];
+    assign tag = update_set[62:33+$clog2(N)];               // 62:36, 62:37, 62:38
+                                                    //Index: 3-1:0, 4-1:0, 5-1:0
+    assign target = update_set[32+$clog2(N):1+$clog2(N)];   // 35:4,  36:5,  37:6
 
     // 2 Possible cases:
     // Tag exists and we only need to update
-    // Tag doesnt exist and we need to add new entry in BTB File
-
-    // Comparator + AND Gate to check if required tag exists in branch and if value is valid    assign check_branch1 = valid1 && (read_tag == tag1);
-    assign entry_exists = valid && (update_tag == tag);    
+    // Tag doesnt exist and we need to add new entry in BTB File  
 
     // Valid remain 1 if it was 1 and if new value is being inserted
     assign write_valid = 1'b1;
@@ -54,22 +43,9 @@ module btb_write #(parameter M = 128, parameter N = 32)(
     // Mux to select which branch to write new/updated target into and which to keep as old one
     assign write_target = update_target;
 
-    // Use the MUX to check if entry is new/replacement
-    // If entry is new value then initialize it with strongNotTaken(00) before passing to FSM
-    // FSM will decide on base of old value and mispredicted, the new prediction for the address
-    // FSM is using dynamic 2 bit predictor
-    assign current_state_branch =  entry_exists ? state : 2'b00;
-
-    dynamic_branch_predictor fsm_branch(
-        .current_state(current_state_branch),
-        .mispredicted(mispredicted),
-        .next_state(next_state_branch)
-    );
-
-    assign write_state = next_state_branch;
+    assign write_state = 2'b10; // Always Taken
 
     // Initialize the final set which we have to replace in BTB file
     // Set is formed from concationation of all results calculated above
     assign write_set = {write_valid, write_tag, write_target, write_state, {($clog2(N)-1){1'b0}}};
-
 endmodule

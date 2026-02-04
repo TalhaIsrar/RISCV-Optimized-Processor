@@ -1,4 +1,4 @@
-module btb_file #(parameter int M = 128, parameter N = 32)(
+module btb_file #(parameter M = 128, parameter N = 32)(
     input logic clk,
     input logic [$clog2(N)-1:0] read_index, // 2^3 = 8 possible sets
     input logic [$clog2(N)-1:0] update_index,
