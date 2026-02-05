@@ -1,5 +1,3 @@
-`include "defines.svh"
-
 module hazard_unit(
     input logic [4:0] id_rs1,
     input logic [4:0] id_rs2,

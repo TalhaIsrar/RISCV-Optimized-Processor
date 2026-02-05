@@ -1,4 +1,4 @@
-module btb #(parameter N)(
+module btb #(parameter N = 4)(      // Modify N to change the size of BTB
     input logic clk,
     input logic rst,
     input logic [31:0] pc,

@@ -58,6 +58,6 @@ module btb_read #(parameter N = 32)(
 
     // Calculate the next LRU value for current set
     assign current_LRU_read = LRU[read_index];
-    assign next_LRU_read = valid ? check_branch2 : current_LRU_read;
+    assign next_LRU_read = check_branch2;
     
 endmodule

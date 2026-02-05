@@ -1,4 +1,4 @@
-module riscv_soc_top #(parameter M = 64, parameter N = 8)(
+module riscv_soc_top (
     input logic clk,
     input logic rst,
     output [31:0] ex_result,
@@ -122,7 +122,7 @@ module riscv_soc_top #(parameter M = 64, parameter N = 8)(
     );
 
     // Instantiate the Branch Target Buffer module
-    btb #(.M(M), .N(N)) btb_inst (
+    btb btb_inst (
         .clk(clk),
         .rst(rst),
         .pc(if_pc),
