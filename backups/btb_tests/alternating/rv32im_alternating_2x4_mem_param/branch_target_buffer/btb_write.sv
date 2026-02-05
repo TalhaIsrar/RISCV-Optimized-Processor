@@ -1,6 +1,4 @@
 module btb_write #(parameter N = 32)(
-    input logic clk,
-    input logic rst,
     input logic [127:0] update_set,
     input logic [N-1:0] LRU,
     input logic [29-$clog2(N):0] update_tag,
@@ -18,7 +16,7 @@ module btb_write #(parameter N = 32)(
     wire valid1, valid2;
     wire [29-$clog2(N):0] tag1, tag2;
     wire [31:0] target1, target2;
-    wire [1:0] state1, state2;
+    wire state1, state2;
 
     // Final write singals to put into BTB
     wire write_valid1, write_valid2;
@@ -35,9 +33,12 @@ module btb_write #(parameter N = 32)(
     // Branch to take
     wire take_branch1, take_branch2;
 
-    wire [1:0] write_state1, write_state2;
+    // Current state of branches to consider
+    wire current_state_branch1, current_state_branch2;
 
-    logic alternating_branch1, alternating_branch2;
+    // Next state of branches
+    wire next_state_branch1, next_state_branch2;
+    wire write_state1, write_state2;
 
     // Set (128 bits) = Branch1 (64 bits) + Branch2(64 bits)
     // Branch (64 bits) = Valid (1 bit) + Tag (27 bits) + Target (32 bits) + State (2 bits) + N/A (2 bits)
@@ -52,6 +53,9 @@ module btb_write #(parameter N = 32)(
                                                     //Index: 3-1:0, 4-1:0, 5-1:0
     assign target1 = branch1[32+$clog2(N):1+$clog2(N)];   // 35:4,  36:5,  37:6
     assign target2 = branch2[32+$clog2(N):1+$clog2(N)];
+
+    assign state1 = branch1[$clog2(N)];
+    assign state2 = branch2[$clog2(N)];
 
     // 2 Possible cases:
     // Tag exists and we only need to update
@@ -85,23 +89,32 @@ module btb_write #(parameter N = 32)(
     assign write_target1 = insert_branch1 ? update_target : target1;
     assign write_target2 = insert_branch2 ? update_target : target2;
 
-    always_ff @(posedge clk, posedge rst) begin
-        if (rst) begin
-            alternating_branch1 <= '1;
-            alternating_branch2 <= '1;
-        end else begin
-            alternating_branch1 <= ~alternating_branch1;
-            alternating_branch2 <= ~alternating_branch2;
-        end
-    end
+    // Use the MUX to check if entry is new/replacement
+    // If entry is new value then initialize it with strongNotTaken(00) before passing to FSM
+    // FSM will decide on base of old value and mispredicted, the new prediction for the address
+    // FSM is using dynamic 2 bit predictor
+    assign current_state_branch1 =  entry_exists ? state1 : 1'b0;
+    assign current_state_branch2 =  entry_exists ? state2 : 1'b0;
 
-    assign write_state1 = {alternating_branch1, 1'b0};
-    assign write_state2 = {alternating_branch2, 1'b0};  // MSB matters only
+    dynamic_branch_predictor fsm_branch1(
+        .current_state(current_state_branch1),
+        .mispredicted(mispredicted),
+        .next_state(next_state_branch1)
+    );
+
+    dynamic_branch_predictor fsm_branch2(
+        .current_state(current_state_branch2),
+        .mispredicted(mispredicted),
+        .next_state(next_state_branch2)
+    );
+
+    assign write_state1 = insert_branch1 ? next_state_branch1 : state1;
+    assign write_state2 = insert_branch2 ? next_state_branch2 : state2;
 
     // Initialize the final set which we have to replace in BTB file
     // Set is formed from concationation of all results calculated above
-    assign write_set = { write_valid1, write_tag1, write_target1, write_state1, {($clog2(N)-1){1'b0}},
-                         write_valid2, write_tag2, write_target2, write_state2, {($clog2(N)-1){1'b0}}};
+    assign write_set = { write_valid1, write_tag1, write_target1, write_state1, {($clog2(N)){1'b0}},
+                         write_valid2, write_tag2, write_target2, write_state2, {($clog2(N)){1'b0}}};
 
     // Calculate the next LRU value for current set
     assign next_LRU_write = insert_branch2;

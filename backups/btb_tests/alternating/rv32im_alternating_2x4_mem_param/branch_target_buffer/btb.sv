@@ -73,8 +73,6 @@ module btb #(parameter N = 4)(      // Modify N to change the size of BTB
     );
 
     btb_read #(.N(N)) btb_read_inst(
-        .clk(clk),
-        .rst(rst),
         .read_set(read_set),
         .LRU(LRU),
         .read_tag(read_tag),
@@ -86,8 +84,6 @@ module btb #(parameter N = 4)(      // Modify N to change the size of BTB
     );
 
     btb_write #(.N(N)) btb_write_inst(
-        .clk(clk),
-        .rst(rst),
         .update_set(update_set),
         .LRU(LRU),
         .update_tag(update_tag),
