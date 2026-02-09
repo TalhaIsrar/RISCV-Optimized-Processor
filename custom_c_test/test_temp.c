@@ -166,30 +166,41 @@ void uart_puthex(uint32_t val)
         shift -= 4;
     }
 }
+
+static inline int get_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF10;
+}
+
+static inline int get_jump_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF20;
+}
+
+static inline int get_mispred_count(void)
+{
+    return *(volatile int*)0xFFFFFF30;
+}
+
+
 int main(void)
 {
     int err = 0;
 
-    err += test_mul_basic();
-    err += test_mulh();
-    err += test_mulhu();
-    err += test_mulhsu();
+    int start = get_insts_count();
 
-    err += test_div();
-    err += test_divu();
-    err += test_div_zero();
-    err += test_div_overflow();
+    volatile int a = 0x00000014;
+    volatile int b = 0x6ffffa;
+    volatile int c = a * b;
 
-    err += test_rem();
-    err += test_remu();
-    err += test_rem_zero();
+    uart_puts("ERR=");
+    uart_puthex(c);
+    uart_putc('\n');
 
-    if (err ) {
-        uart_puts("ERR=");
-        uart_puthex(err);
-        uart_putc('\n');
-    }
+    int end = get_insts_count();
+    int count = end - start;
+    uart_puthex(count);
 
     // return 0 if ALL tests passed
-    return err;
+    return c;
 }
