@@ -241,6 +241,22 @@ module riscv_soc_top(
         .rs2_forward_cntl(rs2_forward_cntl)
     );
 
+    
+    // Instantiate the M Unit
+    riscv_m_unit riscv_m_unit_inst(
+        .clk(clk),
+        .rst(rst),
+        .valid(m_unit_invalid_inst && !ex_if_jump_en),
+        .instruction(m_unit_instruction),
+        .rs1(op1_selected),
+        .rs2(ex_op2_selected),
+        .rd(ex_wb_rd),
+        .wr(m_unit_wr),
+        .result(m_unit_result),
+        .busy(m_unit_busy),
+        .ready(m_unit_ready),
+        .result_dest(m_unit_dest)
+    );
 
     // Instantiate the Execute stage module
     execute_stage execute_stage_inst (
@@ -253,9 +269,10 @@ module riscv_soc_top(
         .func3(ex_func3),
         .ex_alu_src(ex_alu_src),
         .ex_wb_reg_file(ex_wb_reg_file),
-
-        .m_inst_valid(m_unit_invalid_inst),
-
+        .m_unit_result(m_unit_result),
+        .m_unit_wr(m_unit_wr),
+        .m_unit_ready(m_unit_ready),
+        .m_unit_dest(m_unit_dest),
         .alu_rd(ex_wb_rd),
         .rs1_forward_cntl(rs1_forward_cntl),
         .rs2_forward_cntl(rs2_forward_cntl),
@@ -280,7 +297,7 @@ module riscv_soc_top(
         .ex_load_inst(ex_wb_load),
         .jump_branch_taken(ex_if_jump_en),
         .invalid_inst(invalid_inst && !m_type_inst),
-        .stall(0),
+        .stall(m_unit_busy || (m_unit_invalid_inst && !ex_if_jump_en && !m_unit_ready)),
         .if_id_pipeline_flush(if_id_pipeline_flush),
         .if_id_pipeline_en(if_id_pipeline_en),
         .id_ex_pipeline_flush(id_ex_pipeline_flush),

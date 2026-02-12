@@ -27,6 +27,29 @@ module mem_stage(
     output logic [31:0] calculated_result
 );
 
+    // Byte offset from address
+    wire [1:0] byte_offset;
+
+    // Generate byte strobe for axi4lite write channel
+    logic [3:0] write_byte_strobe;
+    logic [31:0] store_data_shifted;
+
+    logic [31:0] result_delay;
+    logic [2:0] load_delay;
+    logic [1:0] byte_offset_delay;
+
+    wire [31:0] timer_val, mem_read_data, inst_cntr_val, j_inst_cntr_val, mispred_inst_val;
+    logic [31:0] final_read_data;
+    wire uartWen, dmemWenFinal;
+    wire [7:0] uartData;
+
+    wire read_timer = (result_delay == 32'hFFFF_FF00);
+    wire read_inst_cntr = (result_delay == 32'hFFFF_FF10);
+    wire read_j_inst_cntr = (result_delay == 32'hFFFF_FF20);
+    wire read_mispred_cntr = (result_delay == 32'hFFFF_FF30);
+
+    assign byte_offset = result[1:0];
+
     // Instantiate the PC Jump Module
     pc_jump pc_jump_inst (
         .pred_valid(pred_valid),
@@ -44,14 +67,6 @@ module mem_stage(
         .modify_pc(jump_en),
         .btb_update(btb_update)
     );
-
-    // Byte offset from address
-    wire [1:0] byte_offset;
-    assign byte_offset = result[1:0];
-
-    // Generate byte strobe for axi4lite write channel
-    logic [3:0] write_byte_strobe;
-    logic [31:0] store_data_shifted;
 
     // Combinational block to convert store type and byte offset to byte enables
     always_comb begin
@@ -75,9 +90,6 @@ module mem_stage(
         endcase
     end
 
-    logic [31:0] result_delay;
-    logic [2:0] load_delay;
-    logic [1:0] byte_offset_delay;
     // Next PC Register
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -90,16 +102,6 @@ module mem_stage(
             byte_offset_delay <= byte_offset;
         end
     end
-
-    wire [31:0] timer_val, mem_read_data, inst_cntr_val, j_inst_cntr_val, mispred_inst_val;
-    logic [31:0] final_read_data;
-    wire uartWen, dmemWenFinal;
-    wire [7:0] uartData;
-
-    wire read_timer = (result_delay == 32'hFFFF_FF00);
-    wire read_inst_cntr = (result_delay == 32'hFFFF_FF10);
-    wire read_j_inst_cntr = (result_delay == 32'hFFFF_FF20);
-    wire read_mispred_cntr = (result_delay == 32'hFFFF_FF30);
 
     assign uartData = op2_data[7:0];
     assign uartWen = s_type_inst & (result == 32'hFFFF_0000);
@@ -114,7 +116,6 @@ module mem_stage(
     end
 
     wire [31:0] addr = (result - 32'h10000000);
-
 
     data_memory dmem(
             .clk(clk),

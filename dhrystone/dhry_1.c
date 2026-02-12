@@ -46,7 +46,7 @@ Boolean Reg = true;
 /* variables for time measurement: */
 
 #ifdef TIMES
-#define Too_Small_Cycles (100000) // For 2 Seconds it will be 2 * CPU_FREQ_HZ
+#define Too_Small_Cycles (100) // For 2 Seconds it will be 2 * CPU_FREQ_HZ
 /* Measurements should last at least about 2 seconds */
 #endif
 #ifdef TIME

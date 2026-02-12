@@ -175,10 +175,11 @@ int main(void)
     err += test_mulhu();
     err += test_mulhsu();
 
-    
     err += test_div();
     err += test_divu();
+
     err += test_div_zero();
+
     err += test_div_overflow();
 
     err += test_rem();

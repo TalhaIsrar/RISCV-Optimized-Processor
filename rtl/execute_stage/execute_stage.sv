@@ -10,7 +10,10 @@ module execute_stage(
     input logic ex_wb_reg_file,
     input logic [4:0] alu_rd,
 
-    input logic m_inst_valid,
+    input [31:0] m_unit_result,
+    input m_unit_wr,
+    input m_unit_ready,
+    input [4:0] m_unit_dest,
     
     input logic [1:0] rs1_forward_cntl,
     input logic [1:0] rs2_forward_cntl,
@@ -32,8 +35,6 @@ module execute_stage(
     wire [31:0] op1_alu;
     wire [31:0] op2_alu;
     logic [31:0] alu_result;
-
-    logic [31:0] m_unit_result;
 
     // Mux for forwarding operand 1
     always_comb begin
@@ -66,16 +67,6 @@ module execute_stage(
     assign op1_alu = (decoded_instruction[0] || decoded_instruction[1] || decoded_instruction[2]) ? pc :
                      (decoded_instruction[4] ? '0 : op1_forwarded);
 
-
-    m_unit m_unit_inst(
-        .m_inst_valid(m_inst_valid),
-        .op1_m_unit(op1_forwarded),
-        .op2_m_unit(op2_forwarded),
-        .func3(func3),
-        .func7(func7),
-        .result_m_unit(m_unit_result)
-    );
-
     // Instantiate the ALU Controller
     alu_control alu_control_inst (
         .func3(func3),
@@ -94,8 +85,8 @@ module execute_stage(
     );
 
     // Check if we have data from M unit
-    assign result = m_inst_valid ? m_unit_result : alu_result;
-    assign wb_reg_file = ex_wb_reg_file;
-    assign wb_rd = (pipeline_flush ? 5'b00000 : alu_rd);
+    assign result = m_unit_ready ? m_unit_result : alu_result;
+    assign wb_reg_file = m_unit_ready ? m_unit_wr : ex_wb_reg_file;
+    assign wb_rd = m_unit_ready ? m_unit_dest : (pipeline_flush ? 5'b00000 : alu_rd);
 
 endmodule

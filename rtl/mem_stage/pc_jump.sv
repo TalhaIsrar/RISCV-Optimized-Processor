@@ -21,6 +21,14 @@ module pc_jump(
     wire jalr_inst, jump_inst, branch_inst;
     wire branch_taken;
 
+    // Compute branch/jump enable
+    wire beq  = (func3 == 3'b000);
+    wire bne  = (func3 == 3'b001);
+    wire blt  = (func3 == 3'b100);
+    wire bge  = (func3 == 3'b101);
+    wire bltu = (func3 == 3'b110);
+    wire bgeu = (func3 == 3'b111);
+
     assign lt_flag = alu_flags[2];
     assign ltu_flag = alu_flags[1];
     assign zero_flag = alu_flags[0];
@@ -29,14 +37,6 @@ module pc_jump(
     assign jalr_inst = decoded_instruction[0];
     assign jump_inst = decoded_instruction[2] || jalr_inst;
     assign branch_inst = decoded_instruction[3];
-
-    // Compute branch/jump enable
-    wire beq  = (func3 == 3'b000);
-    wire bne  = (func3 == 3'b001);
-    wire blt  = (func3 == 3'b100);
-    wire bge  = (func3 == 3'b101);
-    wire bltu = (func3 == 3'b110);
-    wire bgeu = (func3 == 3'b111);
 
     assign input_a = jalr_inst ? op1 : pc;
     assign adder_out = $signed(input_a) + $signed(immediate);
