@@ -96,6 +96,40 @@ void uart_putsh(const char *str, int val)
     shift -= 4;
   }
 }
+void uart_puti(const char *str, int val)
+{
+  uart_puts(str);
+
+  // Handle negative numbers
+  if (val < 0)
+  {
+    uart_putc('-');
+    val = -val;
+  }
+
+  // Special case for 0
+  if (val == 0)
+  {
+    uart_putc('0');
+    return;
+  }
+
+  // Convert integer to string (reverse order)
+  char buffer[12];   // enough for 32-bit int
+  int i = 0;
+
+  while (val > 0)
+  {
+    buffer[i++] = '0' + (val % 10);
+    val /= 10;
+  }
+
+  // Print digits in correct order
+  while (i > 0)
+  {
+    uart_putc(buffer[--i]);
+  }
+}
 
 // Read the hardware cycle counter
 int barebones_clock()
@@ -104,6 +138,20 @@ int barebones_clock()
     return *hardwareCounterAddr;
 }
 
+static inline int get_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF10;
+}
+
+static inline int get_jump_insts_count(void)
+{
+    return *(volatile int*)0xFFFFFF20;
+}
+
+static inline int get_mispred_count(void)
+{
+    return *(volatile int*)0xFFFFFF30;
+}
 
 main()
 /*****/
@@ -174,6 +222,9 @@ main()
   /***************/
   // introduces reads of RISC-V CSRs instead of OS-based timing before start
   Begin_Time = barebones_clock();
+  int mispred_start = get_mispred_count();
+  int j_inst_start = get_jump_insts_count();
+  int inst_start = get_insts_count();
   for (Run_Index = 1; Run_Index <= Number_Of_Runs; ++Run_Index)
   {
 
@@ -225,7 +276,15 @@ main()
   /**************/
 
   // Change: introduces reads of RISC-V CSRs at the end
+  int mispred_end = get_mispred_count();
+  int j_inst_end = get_jump_insts_count();
+  int inst_end = get_insts_count();
+
   End_Time = barebones_clock();
+
+  int mispred_count = mispred_end - mispred_start;
+  int j_inst_count = j_inst_end - j_inst_start;
+  int inst_count = inst_end - inst_start;
 
   uart_puts("Execution ends\n");
   uart_putc('\n');
@@ -342,24 +401,31 @@ main()
     // Print table
     uart_puts("\n--- Dhrystone Results ---\n");
 
-    uart_putsh("Total Cycles:                ", User_Cycles);
+    uart_puti("Total Cycles:                ", User_Cycles);
     uart_putc('\n');
 
-    uart_putsh("Cycles per Dhrystone:        ", Cycles_Per_Run);
+    uart_puti("Cycles per Dhrystone:        ", Cycles_Per_Run);
     uart_putc('\n');
 
     #ifdef CPU_FREQ_HZ
-    uart_putsh("CPU Frequency (Hz):          ", CPU_FREQ_HZ);
+    uart_puti("CPU Frequency (Hz):          ", CPU_FREQ_HZ);
     uart_putc('\n');
 
-    uart_putsh("Dhrystones per Second:       ", Dhrystones_Per_Second);
+    uart_puti("Dhrystones per Second:       ", Dhrystones_Per_Second);
     uart_putc('\n');
 
-    uart_putsh("Microseconds per Dhrystone  :", Microseconds_Per_Run);
+    uart_puti("Microseconds per Dhrystone:  ", Microseconds_Per_Run);
     uart_putc('\n');
     #endif
 
-    uart_puts("Done.\n");
+    uart_puti("Instructions Count:          ", inst_count);
+    uart_putc('\n');
+
+    uart_puti("Jump Instructions:           ", j_inst_count);
+    uart_putc('\n');
+
+    uart_puti("Mispredictions:              ", mispred_count);
+    uart_putc('\n');
   }
 }
 

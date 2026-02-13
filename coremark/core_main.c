@@ -310,11 +310,11 @@ for (i = 0; i < MULTITHREAD; i++)
     int j_inst_end = get_jump_insts_count();
     int inst_end = get_insts_count();
 
+    stop_time();
+
     int mispred_count = mispred_end - mispred_start;
     int j_inst_count = j_inst_end - j_inst_start;
     int inst_count = inst_end - inst_start;
-
-    stop_time();
 
     total_time = get_time();
     /* get a function of the input to report */
