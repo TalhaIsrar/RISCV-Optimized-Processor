@@ -1,9 +1,10 @@
-# RISC-V Benchmarking Framework
+# RISC-V Optimized Versions
 
-This repository provides a testing framework for RISC-V based processors. I includes riscv-tests, dhrystone benchmark and coremark benchmark. It also includes a test.c file in folder custom_c_test for writing and testing c based programs.
-It was tested on a simplified version of my [RISC-V SoC](https://github.com/TalhaIsrar/RISCV-RV32IM-AXI4-Lite-SoC). The design is evolving as more bugs are being found.
+This repository serves as a testing framework to optimize performance of my [RISC-V SoC](https://github.com/TalhaIsrar/RISCV-RV32IM-AXI4-Lite-SoC). There are many different versions within the backup folder with different configurations of the processor as well as btb and different sizes of BTBs. It also introduces a parametic btb and configurable division unit to reduce division clock cycles (reduces Fmax as well.) The testing is done of the RISC-V Benchmarking framework which I have developed in another repo
+
 
 ## 🔄 Usage
+Copy the required version of the code from the backups folder into the root directory of this repo and rename it to rtl.
 To run any of the tests, after installing the pre-requisties, you can run the following commands:
 
 ```bash
