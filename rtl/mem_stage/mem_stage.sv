@@ -22,6 +22,7 @@ module mem_stage(
     output logic jump_en,
     output logic btb_update,
     output logic [31:0] btb_update_target,
+    output logic jump_inst,
 
     output logic [31:0] read_data,
     output logic [31:0] calculated_result
@@ -65,7 +66,8 @@ module mem_stage(
         .update_pc(pc_jump_addr),
         .btb_update_target(btb_update_target),
         .modify_pc(jump_en),
-        .btb_update(btb_update)
+        .btb_update(btb_update),
+        .jump_inst(jump_inst)
     );
 
     // Combinational block to convert store type and byte offset to byte enables

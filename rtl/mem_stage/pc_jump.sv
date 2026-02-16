@@ -12,13 +12,14 @@ module pc_jump(
     output logic [31:0] update_pc,
     output logic [31:0] btb_update_target,
     output logic modify_pc,
-    output logic btb_update
+    output logic btb_update,
+    output logic jump_inst
 );
     wire signed [31:0] input_a; 
     wire [31:0] adder_out;
     wire [31:0] pc_inc;
     wire lt_flag, ltu_flag, zero_flag;
-    wire jalr_inst, jump_inst, branch_inst;
+    wire jalr_inst, branch_inst;
     wire branch_taken;
 
     // Compute branch/jump enable

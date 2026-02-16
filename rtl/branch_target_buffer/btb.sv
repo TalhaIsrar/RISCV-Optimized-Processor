@@ -9,6 +9,7 @@ module btb #(parameter N = 1024)(      // Modify N to change the size of BTB
     
     input logic [31:0] update_target,
     input logic mispredicted,
+    input logic btb_jump_inst,
 
     output logic [31:0] target_pc,
     output logic valid,
@@ -92,6 +93,7 @@ module btb #(parameter N = 1024)(      // Modify N to change the size of BTB
         .update_index(update_index),
         .update_target(update_target),
         .mispredicted(mispredicted),
+        .jump_inst(btb_jump_inst),
         .write_set(write_set),
         .next_LRU_write(update_lru_write)
     );

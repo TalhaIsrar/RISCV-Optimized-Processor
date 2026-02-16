@@ -5,6 +5,7 @@ module btb_write #(parameter N = 32)(
     input logic [$clog2(N)-1:0] update_index,
     input logic [31:0] update_target,
     input logic mispredicted,
+    input logic jump_inst,
     output logic [127:0] write_set,
     output logic next_LRU_write
 );
@@ -38,6 +39,7 @@ module btb_write #(parameter N = 32)(
 
     // Next state of branches
     wire [1:0] next_state_branch1, next_state_branch2;
+    wire [1:0] final_state_branch1, final_state_branch2;
     wire [1:0] write_state1, write_state2;
 
     // Set (128 bits) = Branch1 (64 bits) + Branch2(64 bits)
@@ -108,8 +110,11 @@ module btb_write #(parameter N = 32)(
         .next_state(next_state_branch2)
     );
 
-    assign write_state1 = insert_branch1 ? next_state_branch1 : state1;
-    assign write_state2 = insert_branch2 ? next_state_branch2 : state2;
+    assign final_state_branch1 = jump_inst ? 2'b11 : next_state_branch1;
+    assign final_state_branch2 = jump_inst ? 2'b11 : next_state_branch2;
+
+    assign write_state1 = insert_branch1 ? final_state_branch1 : state1;
+    assign write_state2 = insert_branch2 ? final_state_branch2 : state2;
 
     // Initialize the final set which we have to replace in BTB file
     // Set is formed from concationation of all results calculated above

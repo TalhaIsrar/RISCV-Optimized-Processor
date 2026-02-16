@@ -22,6 +22,7 @@ module riscv_soc_top(
 
     logic [31:0] id_predicted_pc, ex_predicted_pc;
     logic id_pred_valid;
+    logic btb_jump_inst;
 
     // Hazard Unit Signals
     logic if_id_pipeline_flush;
@@ -134,6 +135,7 @@ module riscv_soc_top(
         .update(btb_update), // Replace btb_update by 1'b0 to disconnect BTB
         .update_target(btb_update_target), // Replace btb_update_target by 1'b0 to disconnect BTB
         .mispredicted(ex_if_jump_en),
+        .btb_jump_inst(btb_jump_inst),
         .target_pc(btb_target_pc),
         .valid(btb_pc_valid),
         .predictedTaken(btb_pc_predictTaken)
@@ -379,6 +381,7 @@ module riscv_soc_top(
         .jump_en(ex_if_jump_en),
         .btb_update(btb_update),
         .btb_update_target(btb_update_target),
+        .jump_inst(btb_jump_inst),
 
         .read_data(mem_read_data),
         .calculated_result(mem_calculated_result)
