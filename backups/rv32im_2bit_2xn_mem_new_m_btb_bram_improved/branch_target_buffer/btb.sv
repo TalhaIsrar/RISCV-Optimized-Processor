@@ -30,29 +30,10 @@ module btb #(parameter N = 1024)(      // Modify N to change the size of BTB
     // LRU Signals
     wire LRU_read, LRU_write, update_lru_read, update_lru_write;
 
-    // Added a cycle delay in update signal
-    logic reg_file_write;
-    logic [127:0] reg_write_set;
-    logic [$clog2(N)-1:0] reg_write_index, index_delay;
-
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            reg_file_write <= 0;
-            reg_write_set <= 0;
-            reg_write_index <= 0;
-            index_delay <= 0;
-        end else begin
-            reg_file_write <= update;  // delayed by 1 cycle
-            reg_write_set <= write_set;
-            reg_write_index <= update_index;
-            index_delay <= read_index;
-        end
-    end
-
     wire [$clog2(N)-1:0] read_index_file;
-    assign read_index_file = next_pc[$clog2(N)+1:2];
-
     wire [$clog2(N)-1:0] update_index_file;
+
+    assign read_index_file = next_pc[$clog2(N)+1:2];
     assign update_index_file = next_update_pc[$clog2(N)+1:2];
 
     // PC (32 bits) = Tag (27 bits) + Index (3 bits) + Byte offset (2 bits)
@@ -68,9 +49,9 @@ module btb #(parameter N = 1024)(      // Modify N to change the size of BTB
         .rst(rst),
         .read_index(read_index_file),
         .update_index(update_index_file),
-        .write_index(reg_write_index),
-        .write_set(reg_write_set),
-        .write_en(reg_file_write),
+        .write_index(update_index),
+        .write_set(write_set),
+        .write_en(update),
         .read_set(read_set),
         .update_set(update_set)
     );
@@ -102,9 +83,9 @@ module btb #(parameter N = 1024)(      // Modify N to change the size of BTB
         .clk(clk),
         .rst(rst),
         .valid(valid),
-        .update(reg_file_write),
-        .write_index(index_delay),
-        .write_update_index(reg_write_index),
+        .update(update),
+        .write_index(read_index),
+        .write_update_index(update_index),
         .read_index(read_index_file),
         .read_update_index(update_index_file),
         .update_lru_read(update_lru_read),
