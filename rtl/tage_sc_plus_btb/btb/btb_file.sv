@@ -6,17 +6,17 @@ module btb_file #(parameter N = 32)(
     input logic [$clog2(N)-1:0] write_index,
     input logic write_en,
 
-    input logic [65-$clog2(N) : 0] write_data, // TAG(32-index) + target(32) + valid(1) + uncond_inst(1)
-    output logic [65-$clog2(N) : 0] read_data 
+    input logic [63-$clog2(N) : 0] write_data, // TAG(32-index) + target(32) + valid(1) + uncond_inst(1)
+    output logic [63-$clog2(N) : 0] read_data 
 );
 
-    (* ram_style = "block" *) logic [65-$clog2(N):0] file [0:N-1];
-    logic [65-$clog2(N) : 0] read_data_reg;
+    (* ram_style = "block" *) logic [63-$clog2(N):0] file [0:N-1];
+    logic [63-$clog2(N) : 0] read_data_reg;
 
     logic [$clog2(N)-1:0] read_index_delay;
     logic [$clog2(N)-1:0] write_index_delay;
     logic write_en_delay;
-    logic [65-$clog2(N) : 0] write_data_delay; 
+    logic [63-$clog2(N) : 0] write_data_delay; 
 
     // Not practical way but here we keep
     integer i;
