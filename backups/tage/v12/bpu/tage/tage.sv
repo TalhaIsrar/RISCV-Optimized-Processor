@@ -57,8 +57,6 @@ module tage_top #(
     logic found;
     logic alloc_found;
 
-    logic [$clog2(N_TABLES)-1:0] rr_ptr;
-
     // Base predictor (BHT)
     bimodal_base #(.BIMODAL_IDX(BIMODAL_IDX)) base_bht (
         .clk(clk),

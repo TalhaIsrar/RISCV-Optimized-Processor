@@ -5,12 +5,7 @@ module bpu_top #(
     parameter BIMODAL_IDX = 11,
     parameter int TAGE_HIST_LEN [N_TABLES] = '{10, 20, 30, 40, 50, 60, 70},
     parameter int TAGE_IDX_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9},
-    parameter int TAGE_TAG_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9},
-    parameter SC_N_TABLES = 4,
-    parameter SC_CTR_SIZE = 6,
-    parameter int SC_HIST_LEN [SC_N_TABLES] = '{0, 4, 10, 16},
-    parameter int SC_IDX_SIZE [SC_N_TABLES] = '{9, 9, 9, 9},
-    parameter int SC_THRES = 20
+    parameter int TAGE_TAG_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9}
 )(
 
     input  logic         clk,
@@ -56,18 +51,6 @@ module bpu_top #(
     logic btb_uncond;
     logic btb_write_en;
     
-    localparam WEIGHT_WIDTH = SC_CTR_SIZE + 1;
-    localparam SUM_WIDTH = (WEIGHT_WIDTH) + $clog2(SC_N_TABLES);
-
-    logic signed [SUM_WIDTH-1:0] sc_sum, sc_sum_abs;
-    logic signed [31:0] sc_sum_abs32;
-    logic signed [7:0] tageCtrCentered;
-    logic signed [SUM_WIDTH:0] totalSum, totalSumAbs ;
-    logic pred_o;
-
-    logic [31:0] sc_bank_thres;      // dynamic threshold
-    logic [4:0] sc_bank_ctr;        // counter controlling threshold
-
     assign update_en_branch = update_i && !update_uncond_inst;
 
     // TAGE Predictor
@@ -100,70 +83,8 @@ module bpu_top #(
         .tag_hits_in(tag_hits_in),
         .u_bits_in(u_bits_in),
         .provider_table_in(provider_table_in),
-        .alloc_table_in(alloc_table_in),
-        .tageCtrCentered(tageCtrCentered)
+        .alloc_table_in(alloc_table_in)
     );
-
-    // SC
-    sc_top  #(
-        .SC_N_TABLES(SC_N_TABLES),
-        .SC_CTR_SIZE(SC_CTR_SIZE),
-        .GHR_SIZE(GHR_SIZE),
-        .SC_HIST_LEN(SC_HIST_LEN),
-        .SC_IDX_SIZE(SC_IDX_SIZE)
-    ) sc_inst (
-        .clk(clk),
-        .rst(rst),
-        .pc_next_pred(next_if_pc),
-        .update_i(update_en_branch),
-        .actual_taken_i(update_taken),
-        .pc_update_read(ex_update_pc),
-        .pc_update_write(mem_update_pc),
-        .ghr_if(ghr_out),
-        .ghr_ex(ghr_ex),
-        .ghr_mem(ghr_mem),
-
-        .sc_sum_o(sc_sum)
-    );
-
-    assign sc_sum_abs = (sc_sum < 0) ? -sc_sum : sc_sum;
-    assign sc_sum_abs32 = $signed({{(32-SUM_WIDTH){sc_sum_abs[SUM_WIDTH-1]}}, sc_sum_abs});
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            sc_bank_thres <= 20;    // initial value
-            sc_bank_ctr   <= 5'b10000;
-        end else if (update_i) begin
-            // SC marginal confidence range
-            if (sc_sum_abs32 >= (sc_bank_thres - 4) && sc_sum_abs32 <= (sc_bank_thres - 2)) begin
-                if ((sc_sum[SUM_WIDTH-1] == update_taken)) // correct prediction
-                    sc_bank_ctr <= sc_bank_ctr + 1;
-                else
-                    sc_bank_ctr <= sc_bank_ctr - 1;
-
-                // Saturate threshold
-                if (sc_bank_ctr == 5'b11111 && sc_bank_thres <= 31)
-                    sc_bank_thres <= sc_bank_thres + 2;
-                else if (sc_bank_ctr == 5'b00000 && sc_bank_thres >= 6)
-                    sc_bank_thres <= sc_bank_thres - 2;
-
-                // Reset counter if saturated
-                if (sc_bank_ctr == 5'b11111 || sc_bank_ctr == 5'b00000)
-                    sc_bank_ctr <= 5'b10000;
-            end
-        end
-    end
-
-
-    // TAGE SC logic
-    assign totalSum = sc_sum + $signed({{(SUM_WIDTH-8){tageCtrCentered[7]}}, tageCtrCentered});
-    assign totalSumAbs = (totalSum < 0) ? -totalSum : totalSum;
-    always_comb begin
-        if (totalSumAbs > sc_bank_thres[SUM_WIDTH:0])
-            pred_o = (totalSum > 0) ? 1'b1 : 1'b0;
-        else
-            pred_o = tage_pred;
-    end
-
 
     // GHR
     ghr #(.GHR_SIZE(GHR_SIZE)) gh (
@@ -195,7 +116,7 @@ module bpu_top #(
     always_comb begin
         target_pc = btb_target;
         target_valid = btb_valid;
-        pred_taken = pred_o || btb_uncond;
+        pred_taken = tage_pred || btb_uncond;
     end
 
 endmodule

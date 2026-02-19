@@ -29,23 +29,23 @@ module tage_table #(
 
     // Storage arrays
     logic [TAGE_TAG_SIZE-1:0] tag   [ENTRIES-1:0];
-    logic signed [2:0] ctr [ENTRIES-1:0];   // signed counter
-    logic signed [2:0] ctr2 [ENTRIES-1:0];   // signed counter
+    logic [2:0] ctr [ENTRIES-1:0];
+    logic [2:0] ctr2 [ENTRIES-1:0];
     logic              u   [ENTRIES-1:0];
 
     logic u_update, u_update_en;
-    logic signed [2:0]pred_read, update_ctr, update_ctr_final;
+    logic [2:0]pred_read, update_ctr, update_ctr_final;
     logic u_read;
     logic [TAGE_TAG_SIZE-1:0] tag_read,tag_delay,update_tag_delay;
-    logic signed [2:0] ctr_update;
-    logic              ctr_update_en;
+    logic [2:0] ctr_update;
+    logic  ctr_update_en;
     // Initialization
     integer i;
     initial begin
         for (i = 0; i < ENTRIES; i++) begin
             tag[i] = '0;
-            ctr[i] = 3'b111;   // weak NOT TAKEN (-1)
-            ctr2[i] = 3'b111;   // weak NOT TAKEN (-1)
+            ctr[i] = 3'd0;
+            ctr2[i] = 3'd0;
             u[i]   = 1'b0;
         end
     end
@@ -81,17 +81,17 @@ module tage_table #(
             ctr_update_en = 1'b1;
             u_update_en   = 1'b1;
             u_update      = 1'b0;
-            ctr_update    = taken_i ? 3'sd1 : -3'sd1; // weak correct
+            ctr_update = taken_i ? 3'd4 : 3'd3;
         end
         // Provider update case
         else if (update_i) begin
             if (taken_i) begin
-                if (update_ctr_final != 3'sd3) begin
+                if (update_ctr_final != 3'd7) begin
                     ctr_update = update_ctr_final + 1;
                     ctr_update_en = 1'b1;
                 end
-            end else begin 
-                if (update_ctr_final != -3'sd4) begin
+            end else begin
+                if (update_ctr_final != 3'd0) begin
                     ctr_update = update_ctr_final - 1;
                     ctr_update_en = 1'b1;
                 end
@@ -121,7 +121,7 @@ module tage_table #(
     logic tag_en_delay, u_en_delay, ctr_en_delay;
     logic [TAGE_TAG_SIZE-1:0] write_tag_delay;
     logic write_u_delay;
-    logic signed [2:0] write_ctr_delay;
+    logic [2:0] write_ctr_delay;
 
     always_ff @(posedge clk, posedge rst) begin
         if (rst) begin
@@ -148,7 +148,7 @@ module tage_table #(
     end
 
     logic [TAGE_TAG_SIZE-1:0] tag_final;
-    logic signed [2:0] pred_final;
+    logic [2:0] pred_final;
     logic u_final;
 
     assign tag_final = (read_index_delay == write_index_delay) && tag_en_delay ? write_tag_delay : tag_read;
@@ -158,7 +158,7 @@ module tage_table #(
 
 
     assign hit_o  = (tag_final == tag_delay);
-    assign pred_o = (pred_final >= 0);
+    assign pred_o = (pred_final >= 3'd4);
     assign u_o    = u_final;
 
 
