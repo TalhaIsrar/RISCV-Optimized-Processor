@@ -1,11 +1,13 @@
 module bpu_top #(
-    parameter N_TABLES = 3,
-    parameter GHR_SIZE = 128,
-    parameter BTB_SIZE = 1024,
+    parameter N_TABLES = 7,
+    parameter GHR_SIZE = 256,
+    parameter BTB_SIZE = 2048,
     parameter BIMODAL_IDX = 11,
-    parameter TAGE_IDX_SIZE = 9,
-    parameter TAGE_TAG_SIZE = 9
+    parameter int TAGE_HIST_LEN [N_TABLES] = '{10, 20, 30, 40, 50, 60, 70},
+    parameter int TAGE_IDX_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9},
+    parameter int TAGE_TAG_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9}
 )(
+
     input  logic         clk,
     input  logic         rst,
 
@@ -15,6 +17,7 @@ module bpu_top #(
 
     // EX stage updates
     input  logic         update_i,        // enable update
+    input  logic [31:0]  ex_update_pc,   // PC of branch to update
     input  logic [31:0]  mem_update_pc,   // PC of branch to update
     input  logic [31:0]  update_target,   // target PC
     input  logic         update_taken,    // actual branch outcome
@@ -25,7 +28,8 @@ module bpu_top #(
     input logic [N_TABLES-1:0] u_bits_in,
     input logic [$clog2(N_TABLES)-1:0] provider_table_in,
     input logic [$clog2(N_TABLES)-1:0] alloc_table_in,
-    input logic [GHR_SIZE-1:0] ghr_in,
+    input logic [GHR_SIZE-1:0] ghr_ex,
+    input logic [GHR_SIZE-1:0] ghr_mem,
 
     // Outputs
     output logic [31:0]  target_pc,
@@ -40,20 +44,29 @@ module bpu_top #(
 
 );
     logic update_en_branch;
+    logic tage_pred;
+
+    logic [31:0] btb_target;
+    logic btb_valid;
+    logic btb_uncond;
+    logic btb_write_en;
+    
     assign update_en_branch = update_i && !update_uncond_inst;
 
     // TAGE Predictor
-    logic tage_pred;
     tage_top #(
         .GHR_SIZE(GHR_SIZE),
         .N_TABLES(N_TABLES),
         .BIMODAL_IDX(BIMODAL_IDX),
+        .TAGE_HIST_LEN(TAGE_HIST_LEN),
         .TAGE_IDX_SIZE(TAGE_IDX_SIZE),
         .TAGE_TAG_SIZE(TAGE_TAG_SIZE)
     ) tage_inst (
         .clk(clk),
         .rst(rst),
+        .pc_next_pred_i(next_if_pc),
         .pc_pred_i(if_pc),
+        .pc_ex(ex_update_pc),
         .pc_upd_i(mem_update_pc),
         .br_resolved_i(update_en_branch),
         .br_taken_i(update_taken),
@@ -65,7 +78,8 @@ module bpu_top #(
         .provider_table(provider_table_out),
         .alloc_table(alloc_table_out),
 
-        .ghr_in(ghr_in),
+        .ghr_ex(ghr_ex),
+        .ghr_mem(ghr_mem),
         .tag_hits_in(tag_hits_in),
         .u_bits_in(u_bits_in),
         .provider_table_in(provider_table_in),
@@ -82,11 +96,6 @@ module bpu_top #(
     );
 
     // BTB
-    logic [31:0] btb_target;
-    logic btb_valid;
-    logic btb_uncond;
-    logic btb_write_en;
-
     assign btb_write_en = update_i && update_taken;
 
     btb #(.BTB_SIZE(BTB_SIZE)) btb_inst (

@@ -109,16 +109,12 @@ module riscv_soc_top(
     logic        wb_load;
 
     logic taken;
-    parameter N_TABLES = 7;
-    parameter GHR_SIZE = 256;
-    parameter BTB_SIZE = 2048;
-    parameter BIMODAL_IDX = 11;
-    parameter int TAGE_HIST_LEN [N_TABLES] = '{10, 20, 30, 40, 50, 60, 70};
-    parameter int TAGE_IDX_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9};
-    parameter int TAGE_TAG_SIZE [N_TABLES] = '{9, 9, 9, 9, 9, 9, 9};
-    
-    //localparam int MAX_IDX = 12; <- TAGE_IDX_SIZE should be less than this. If more is needed change this in tage.sv
-    //localparam int MAX_TAG = 12; <- TAGE_TAG_SIZE should be less than this. If more is needed change this in tage.sv
+    localparam N_TABLES = 7;
+    localparam GHR_SIZE = 256;
+    localparam BTB_SIZE = 2048;
+    localparam BIMODAL_IDX = 11;
+    localparam TAGE_IDX_SIZE = 9;
+    localparam TAGE_TAG_SIZE = 9;
 
     logic [N_TABLES-1:0] tag_hits_if, tag_hits_id, tag_hits_ex, tag_hits_mem;
     logic [N_TABLES-1:0] u_bits_if, u_bits_id, u_bits_ex, u_bits_mem;
@@ -147,7 +143,6 @@ module riscv_soc_top(
         .GHR_SIZE(GHR_SIZE),
         .BTB_SIZE(BTB_SIZE),
         .BIMODAL_IDX(BIMODAL_IDX),
-        .TAGE_HIST_LEN(TAGE_HIST_LEN),
         .TAGE_IDX_SIZE(TAGE_IDX_SIZE),
         .TAGE_TAG_SIZE(TAGE_TAG_SIZE)
     ) bpu_inst(
@@ -169,8 +164,7 @@ module riscv_soc_top(
         .u_bits_in(u_bits_mem),
         .provider_table_in(provider_table_mem),
         .alloc_table_in(alloc_table_mem),
-        .ghr_ex(ghr_ex),
-        .ghr_mem(ghr_mem),
+        .ghr_in(ghr_mem),
         .tag_hits_out(tag_hits_if),
         .u_bits_out(u_bits_if),
         .provider_table_out(provider_table_if),
