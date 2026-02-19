@@ -220,7 +220,6 @@ main()
   /***************/
   /* Start timer */
   /***************/
-  // introduces reads of RISC-V CSRs instead of OS-based timing before start
   Begin_Time = barebones_clock();
   int mispred_start = get_mispred_count();
   int j_inst_start = get_jump_insts_count();
