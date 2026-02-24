@@ -57,7 +57,7 @@ module bpu_top #(
     logic btb_write_en;
     
     localparam WEIGHT_WIDTH = SC_CTR_SIZE + 1;
-    localparam SUM_WIDTH = SC_CTR_SIZE + 4;
+    localparam SUM_WIDTH = (WEIGHT_WIDTH) + $clog2(SC_N_TABLES);
 
     logic signed [SUM_WIDTH-1:0] sc_sum, sc_sum_abs;
     logic [31:0] sc_sum_abs32;
@@ -65,15 +65,9 @@ module bpu_top #(
     logic signed [SUM_WIDTH:0] totalSum, totalSumAbs ;
     logic pred_o;
 
+    logic [31:0] sc_bank_thres;      // dynamic threshold
     logic [4:0] sc_bank_ctr;        // counter controlling threshold
-    logic [4:0] next_ctr;
-    logic provider_exists;
-    logic signed [SUM_WIDTH:0] sc_bank_thres;
 
-    logic sc_flipped;
-    logic tage_weak;
-
-    assign provider_exists = |tag_hits_out;
     assign update_en_branch = update_i && !update_uncond_inst;
 
     // TAGE Predictor
@@ -131,21 +125,20 @@ module bpu_top #(
 
         .sc_sum_o(sc_sum)
     );
-
-    assign sc_flipped = (pred_o != tage_pred);
+                logic [4:0] next_ctr;
 
     assign sc_sum_abs = (sc_sum < 0) ? -sc_sum : sc_sum;
     assign sc_sum_abs32 = $signed({{(32-SUM_WIDTH){sc_sum_abs[SUM_WIDTH-1]}}, sc_sum_abs});
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            sc_bank_thres <= 64;
+            sc_bank_thres <= 50;    // initial value
             sc_bank_ctr   <= 5'b10000;
-        end else if (update_en_branch) begin
+        end else if (update_i) begin
             // SC marginal confidence range
-            if (sc_flipped && totalSumAbs>= (sc_bank_thres - 4) &&
-                totalSumAbs <= (sc_bank_thres - 2)) begin
+            if (sc_sum_abs32 >= (sc_bank_thres - 4) && sc_sum_abs32 <= (sc_bank_thres - 2)) begin
 
                 next_ctr = sc_bank_ctr;
+
                 if (pred_o == update_taken)
                     next_ctr = sc_bank_ctr + 1;
                 else
@@ -164,17 +157,20 @@ module bpu_top #(
         end
     end
 
+
     // TAGE SC logic
     assign totalSum = sc_sum + $signed({{(SUM_WIDTH-8){tageCtrCentered[7]}}, tageCtrCentered});
     assign totalSumAbs = (totalSum < 0) ? -totalSum : totalSum;
-    assign tage_weak = (tageCtrCentered == 8 || tageCtrCentered == -8);
+
+    logic tage_strong;
+    assign tage_strong = (tageCtrCentered >= 2) || (tageCtrCentered <= -2);
+
     always_comb begin
-        if (provider_exists && tage_weak && totalSumAbs > sc_bank_thres)
+        if (!tage_strong &&( totalSumAbs > sc_bank_thres[SUM_WIDTH:0]))
             pred_o = (totalSum > 0);
         else
             pred_o = tage_pred;
     end
-
 
     // GHR
     ghr #(.GHR_SIZE(GHR_SIZE)) gh (

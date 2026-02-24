@@ -220,8 +220,8 @@ module tage_top #(
     end
 
     always_comb begin
-        provider_ctr_ext = $signed({5'b0, provider_ctr}); // zero-extend to 8 bits then signed
-        tageCtrCentered  = (((provider_ctr_ext - 8'sd4) << 1)+1)<<3;
+        provider_ctr_ext = $signed({5'b0, provider_ctr}); // extend 3-bit to 8-bit signed
+        tageCtrCentered = ((((provider_ctr_ext - 8'sd4) <<< 1) + 1) <<< 3);
     end
 
 endmodule

@@ -22,7 +22,7 @@ module sc_top  #(
 );
     localparam int MAX_IDX = 12;
     localparam WEIGHT_WIDTH = SC_CTR_SIZE + 1;
-    localparam SUM_WIDTH = SC_CTR_SIZE + 4;
+    localparam SUM_WIDTH = (WEIGHT_WIDTH) + $clog2(SC_N_TABLES);
 
     logic [MAX_IDX-1:0] folded_idx [SC_N_TABLES-1:0];
     logic [MAX_IDX-1:0] update_folded_idx [SC_N_TABLES-1:0];
@@ -30,7 +30,7 @@ module sc_top  #(
 
     // Counters
     logic signed [SC_CTR_SIZE-1:0] ctr_tables [SC_N_TABLES-1:0];
-    logic signed [SUM_WIDTH-1:0] weighted_ctr_tables [SC_N_TABLES-1:0];
+    logic signed [WEIGHT_WIDTH:0] weighted_ctr_tables [SC_N_TABLES-1:0];
 
     logic signed [SUM_WIDTH-1:0] sc_sum;
     genvar i;
@@ -93,7 +93,7 @@ module sc_top  #(
     // Calculate Contribution Weighted
     generate
         for (j = 0; j < SC_N_TABLES; j++) begin : weight_gen
-            assign weighted_ctr_tables[j] = ($signed({{(SUM_WIDTH-SC_CTR_SIZE){ctr_tables[j][SC_CTR_SIZE-1]}}, ctr_tables[j]}) <<< 1) + 1;
+            assign weighted_ctr_tables[j] = ($signed({{(WEIGHT_WIDTH+1-SC_CTR_SIZE){ctr_tables[j][SC_CTR_SIZE-1]}}, ctr_tables[j]}) <<< 1) + 1;
         end
     endgenerate
 

@@ -1,8 +1,7 @@
-# Minimal Makefile for RV32I CoreMark simulation
 PORT_DIR = barebones
 
 # CoreMark run configuration
-ITERATIONS     = 1
+ITERATIONS     = 10
 CLOCKS_PER_SEC = 1000
 FLAGS_STR      = ""
 

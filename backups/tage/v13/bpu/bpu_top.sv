@@ -57,7 +57,7 @@ module bpu_top #(
     logic btb_write_en;
     
     localparam WEIGHT_WIDTH = SC_CTR_SIZE + 1;
-    localparam SUM_WIDTH = SC_CTR_SIZE + 4;
+    localparam SUM_WIDTH = (WEIGHT_WIDTH) + $clog2(SC_N_TABLES);
 
     logic signed [SUM_WIDTH-1:0] sc_sum, sc_sum_abs;
     logic [31:0] sc_sum_abs32;
@@ -65,15 +65,9 @@ module bpu_top #(
     logic signed [SUM_WIDTH:0] totalSum, totalSumAbs ;
     logic pred_o;
 
+    logic [31:0] sc_bank_thres;      // dynamic threshold
     logic [4:0] sc_bank_ctr;        // counter controlling threshold
-    logic [4:0] next_ctr;
-    logic provider_exists;
-    logic signed [SUM_WIDTH:0] sc_bank_thres;
 
-    logic sc_flipped;
-    logic tage_weak;
-
-    assign provider_exists = |tag_hits_out;
     assign update_en_branch = update_i && !update_uncond_inst;
 
     // TAGE Predictor
@@ -132,45 +126,40 @@ module bpu_top #(
         .sc_sum_o(sc_sum)
     );
 
-    assign sc_flipped = (pred_o != tage_pred);
-
     assign sc_sum_abs = (sc_sum < 0) ? -sc_sum : sc_sum;
     assign sc_sum_abs32 = $signed({{(32-SUM_WIDTH){sc_sum_abs[SUM_WIDTH-1]}}, sc_sum_abs});
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            sc_bank_thres <= 64;
+            sc_bank_thres <= 20;    // initial value
             sc_bank_ctr   <= 5'b10000;
-        end else if (update_en_branch) begin
+        end else if (update_i) begin
             // SC marginal confidence range
-            if (sc_flipped && totalSumAbs>= (sc_bank_thres - 4) &&
-                totalSumAbs <= (sc_bank_thres - 2)) begin
-
-                next_ctr = sc_bank_ctr;
-                if (pred_o == update_taken)
-                    next_ctr = sc_bank_ctr + 1;
+            if (sc_sum_abs32 >= (sc_bank_thres - 4) && sc_sum_abs32 <= (sc_bank_thres - 2)) begin
+                if ((sc_sum[SUM_WIDTH-1] == update_taken)) // correct prediction
+                    sc_bank_ctr <= sc_bank_ctr + 1;
                 else
-                    next_ctr = sc_bank_ctr - 1;
+                    sc_bank_ctr <= sc_bank_ctr - 1;
 
-                sc_bank_ctr <= next_ctr;
-
-                if (next_ctr == 5'b11111 && sc_bank_thres <= 31)
+                // Saturate threshold
+                if (sc_bank_ctr == 5'b11111 && sc_bank_thres <= 31)
                     sc_bank_thres <= sc_bank_thres + 2;
-                else if (next_ctr == 5'b00000 && sc_bank_thres >= 6)
+                else if (sc_bank_ctr == 5'b00000 && sc_bank_thres >= 6)
                     sc_bank_thres <= sc_bank_thres - 2;
 
-                if (next_ctr == 5'b11111 || next_ctr == 5'b00000)
+                // Reset counter if saturated
+                if (sc_bank_ctr == 5'b11111 || sc_bank_ctr == 5'b00000)
                     sc_bank_ctr <= 5'b10000;
             end
         end
     end
 
+
     // TAGE SC logic
     assign totalSum = sc_sum + $signed({{(SUM_WIDTH-8){tageCtrCentered[7]}}, tageCtrCentered});
     assign totalSumAbs = (totalSum < 0) ? -totalSum : totalSum;
-    assign tage_weak = (tageCtrCentered == 8 || tageCtrCentered == -8);
     always_comb begin
-        if (provider_exists && tage_weak && totalSumAbs > sc_bank_thres)
-            pred_o = (totalSum > 0);
+        if (totalSumAbs > sc_bank_thres[SUM_WIDTH:0])
+            pred_o = (totalSum > 0) ? 1'b1 : 1'b0;
         else
             pred_o = tage_pred;
     end

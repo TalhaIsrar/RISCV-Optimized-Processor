@@ -36,8 +36,8 @@ module sc_table #(
     integer i;
     initial begin
         for (i = 0; i < ENTRIES; i++) begin
-            ctr1[i] = 0;
-            ctr2[i] = 0;
+            ctr1[i] = -(1 <<< (SC_CTR_SIZE-1));
+            ctr2[i] = -(1 <<< (SC_CTR_SIZE-1));
         end
     end
 
@@ -55,16 +55,12 @@ module sc_table #(
         update_ctr_next = update_ctr_final;
 
         if (update_en) begin
-            if (taken_i) begin
-                if (update_ctr_final != MAX_VAL) begin
-                    update_ctr_next = update_ctr_final + 1;
-                    ctr_update_en = 1;
-                end
-            end else begin
-                if (update_ctr_final != MIN_VAL) begin
-                    update_ctr_next = update_ctr_final - 1;
-                    ctr_update_en = 1;
-                end
+            if (taken_i && update_ctr_final != MAX_VAL) begin
+                update_ctr_next = update_ctr_final + 1;
+                ctr_update_en = 1;
+            end else if (update_ctr_final != MIN_VAL) begin
+                update_ctr_next = update_ctr_final - 1;
+                ctr_update_en = 1;
             end
         end
 
