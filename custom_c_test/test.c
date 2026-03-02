@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#define WIDTH 160
-#define HEIGHT 120
-#define MAX_ITER 200
+#define WIDTH 120
+#define HEIGHT 90
+#define MAX_ITER 255
 
 typedef int32_t fixed; // Q16.16 format
 
@@ -24,7 +24,7 @@ void uart_puts(const char *str)
         uart_putc(*str++);
 }
 
-// Send iteration as number + newline
+// Send iteration as number + comma
 void uart_put_iter(uint16_t iter)
 {
     char buf[6]; // max 5 digits + null
@@ -47,22 +47,25 @@ void uart_put_iter(uint16_t iter)
 }
 
 // Map pixel coordinate to complex plane
-void pixel_to_complex(int x, int y, fixed *cre, fixed *cim)
+void pixel_to_complex(int x, int y, fixed *zre, fixed *zim)
 {
-    *cre = TO_FIXED(-2.0) + FIXED_DIV(TO_FIXED(3.0) * x, TO_FIXED(WIDTH));
-    *cim = TO_FIXED(-1.0) + FIXED_DIV(TO_FIXED(2.0) * y, TO_FIXED(HEIGHT));
+    *zre = TO_FIXED(-1.5) + FIXED_DIV(TO_FIXED(3.0) * x, TO_FIXED(WIDTH));
+    *zim = TO_FIXED(-1.0) + FIXED_DIV(TO_FIXED(2.0) * y, TO_FIXED(HEIGHT));
 }
 
 int main(void)
 {
+    // Julia set constant
+    fixed cre = TO_FIXED(-0.7);
+    fixed cim = TO_FIXED(0.27015);
+
     for (int y = 0; y < HEIGHT; y++)
     {
         for (int x = 0; x < WIDTH; x++)
         {
-            fixed cre, cim;
-            pixel_to_complex(x, y, &cre, &cim);
+            fixed zre, zim;
+            pixel_to_complex(x, y, &zre, &zim);
 
-            fixed zre = 0, zim = 0;
             int iter = 0;
 
             while (iter < MAX_ITER)
