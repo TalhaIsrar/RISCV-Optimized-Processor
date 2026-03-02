@@ -1,7 +1,7 @@
 module btb_file #(parameter N = 32)(
     input logic clk,
     input logic rst,
-    input logic [$clog2(N)-1:0] read_index, // 2^3 = 8 possible sets
+    input logic [$clog2(N)-1:0] read_index, 
     input logic [$clog2(N)-1:0] update_index,
     input logic [$clog2(N)-1:0] write_index,
     input logic [127:0] write_set,
@@ -11,8 +11,8 @@ module btb_file #(parameter N = 32)(
     output logic [127:0] update_set  
 );
 
-    (* ram_style = "block" *) logic [127:0] file1 [N-1:0]; // Change from [7:0] to [0:7]
-    (* ram_style = "block" *) logic [127:0] file2 [N-1:0]; // Change from [7:0] to [0:7]
+    (* ram_style = "block" *) logic [127:0] file1 [N-1:0]; 
+    (* ram_style = "block" *) logic [127:0] file2 [N-1:0]; 
 
     logic [127:0] read_set_temp, update_set_temp;
 
