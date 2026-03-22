@@ -12,6 +12,7 @@ make custom
 make riscv-tests
 make dhrystone
 make coremark
+make embench_all
 ```
 
 ## 🛠️ Prerequisites
